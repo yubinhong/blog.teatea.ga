@@ -75,8 +75,6 @@ pagination_dir: page
 ## Themes: https://hexo.io/themes/
 theme: next
 
-# Schemes
-scheme: Pisces
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
