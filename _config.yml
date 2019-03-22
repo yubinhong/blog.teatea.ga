@@ -18,6 +18,13 @@ root: /
 permalink: :year/:month/:day/:title/
 permalink_defaults:
 
+# search
+search:
+  path: search.xml
+  field: post
+  format: html
+  limit: 10000
+
 # Directory
 source_dir: source
 public_dir: public
