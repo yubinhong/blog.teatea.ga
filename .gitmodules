@@ -1,0 +1,3 @@
+[submodule "next7"]
+	path = themes/next7
+	url = https://github.com/yubinhong/next7
