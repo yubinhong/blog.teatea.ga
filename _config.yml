@@ -86,6 +86,14 @@ theme: next7
 sitemap: 
   path: sitemap.xml
 
+# 统计字数
+symbols_count_time:
+ #文章内是否显示
+  symbols: true
+  time: true
+ # 网页底部是否显示
+  total_symbols: true
+  total_time: true
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
