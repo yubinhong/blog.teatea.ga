@@ -3,6 +3,8 @@ title: gitlab服务器迁移
 date: 2019-03-28 17:17:38
 tags:
 categories: gitlab
+keyword: gitlab 迁移
+description: gitlab服务器迁移
 ---
 ### 公司之前的gitlab搭在阿里云上，考虑到安全问题，需要将gitlab迁移到本地服务器。下面记录下步骤：
 ### 1.迁移准备工作和思路:从a服务器迁移到b服务器,由于Gitlab自身的兼容性问题，高版本的Gitlab无法恢复低版本备份的数据,需要注意在b服务器部署和a服务器一样版本的gitlab,部署好环境后开始备份和数据迁移。

@@ -3,6 +3,8 @@ title: gitlab升级
 date: 2019-04-08 14:35:00
 tags:
 categories: gitlab
+keywords: gitlab 升级
+description: gitlab升级
 ---
 #### gitlab属于比较重要的服务，需要时常关注安全问题，官方有安全更新时，都应该尽快进行升级。升级步骤：(这里主要基于yum和apt-get升级)
 ### 1.关闭unicorn，sidekiq和nginx服务

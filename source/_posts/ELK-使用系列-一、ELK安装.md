@@ -3,6 +3,8 @@ title: 'ELK 使用系列:一、ELK安装'
 date: 2019-04-02 10:48:53
 tags:
 categories: ELK
+keywords: ELk elk安装
+description: ELK安装
 ---
 #### 现在许多公司都开始使用ELK进行日志的收集，分析以及展示。今天我就讲讲ELK的安装，后续会继续深入讲解。
 ### 一、安装环境

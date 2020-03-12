@@ -3,6 +3,8 @@ title: php 7.2 安装mcrypt扩展
 date: 2019-05-09 09:26:27
 tags:
 categories: linux
+keyswords: php mcrypt
+description: php 7.2 安装mcrypt扩展
 ---
 微信的接口需要使用到mcrypt加解密，但是php 7.1开始已经移除mcrypt扩展，需要自行安装。
 ### 1.环境

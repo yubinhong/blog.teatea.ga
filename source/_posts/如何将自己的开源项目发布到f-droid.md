@@ -3,6 +3,8 @@ title: 如何将自己的开源项目发布到f-droid
 date: 2019-04-24 14:00:28
 tags:
 categories: f-droid
+keywords: fdroid f-droid
+description: 如何将自己的开源项目发布到f-droid
 ---
 本人所在公司现在想要把公司的一个开源项目发布到f-droid，研究了一周，走了许多弯路，现记录于此，谨防遗忘。
 ### 1.注册一个gitlab.com的账号，fork fdroiddata项目，用于pull request。
