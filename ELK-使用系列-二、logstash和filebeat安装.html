@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="google-site-verification" content="-LvJ2MYKS-LMmbiiWaR7rL6AY0kwJa6QzPsoDVP2WDg">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="上一节讲到elasticsearch和kibana的安装，这一节就来讲logstash和fielbeat安装。一、filebeat的安装和配置filebeat的作用就是日志采集，将采集到的日志发送到中间件，我这边以redis为例，也可以用其他的(kafka)等等。123bash# wget https://artifacts.elastic.co/downloads/beats/filebeat/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ELK 使用系列 二、logstash和filebeat安装">
+<meta property="og:url" content="https://blog.teatea.ga/ELK-使用系列-二、logstash和filebeat安装.html">
+<meta property="og:site_name" content="teatea的博客">
+<meta property="og:description" content="上一节讲到elasticsearch和kibana的安装，这一节就来讲logstash和fielbeat安装。一、filebeat的安装和配置filebeat的作用就是日志采集，将采集到的日志发送到中间件，我这边以redis为例，也可以用其他的(kafka)等等。123bash# wget https://artifacts.elastic.co/downloads/beats/filebeat/">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-07-08T02:00:43.158Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ELK 使用系列 二、logstash和filebeat安装">
+<meta name="twitter:description" content="上一节讲到elasticsearch和kibana的安装，这一节就来讲logstash和fielbeat安装。一、filebeat的安装和配置filebeat的作用就是日志采集，将采集到的日志发送到中间件，我这边以redis为例，也可以用其他的(kafka)等等。123bash# wget https://artifacts.elastic.co/downloads/beats/filebeat/">
+
+
+
+
+
+
+  <link rel="canonical" href="https://blog.teatea.ga/ELK-使用系列-二、logstash和filebeat安装.html">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>ELK 使用系列 二、logstash和filebeat安装 | teatea的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">teatea的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-commonweal">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/404.html" rel="section"><i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br>公益 404</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://blog.teatea.ga/ELK-使用系列-二、logstash和filebeat安装.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="teatea">
+      <meta itemprop="description" content="生命不息，折腾不止！">
+      <meta itemprop="image" content="https://res.cloudinary.com/dc6pgic7p/image/upload/v1554968110/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="teatea的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">ELK 使用系列 二、logstash和filebeat安装
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-04-04 11:20:53" itemprop="dateCreated datePublished" datetime="2019-04-04T11:20:53+08:00">2019-04-04</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2020-07-08 10:00:43" itemprop="dateModified" datetime="2020-07-08T10:00:43+08:00">2020-07-08</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/ELK/" itemprop="url" rel="index"><span itemprop="name">ELK</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="post-meta-item-icon">
+            <i class="fa fa-eye"></i>
+             阅读次数： 
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">11k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">10 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="上一节讲到elasticsearch和kibana的安装，这一节就来讲logstash和fielbeat安装。"><a href="#上一节讲到elasticsearch和kibana的安装，这一节就来讲logstash和fielbeat安装。" class="headerlink" title="上一节讲到elasticsearch和kibana的安装，这一节就来讲logstash和fielbeat安装。"></a>上一节讲到elasticsearch和kibana的安装，这一节就来讲logstash和fielbeat安装。</h4><h3 id="一、filebeat的安装和配置"><a href="#一、filebeat的安装和配置" class="headerlink" title="一、filebeat的安装和配置"></a>一、filebeat的安装和配置</h3><h4 id="filebeat的作用就是日志采集，将采集到的日志发送到中间件，我这边以redis为例，也可以用其他的-kafka-等等。"><a href="#filebeat的作用就是日志采集，将采集到的日志发送到中间件，我这边以redis为例，也可以用其他的-kafka-等等。" class="headerlink" title="filebeat的作用就是日志采集，将采集到的日志发送到中间件，我这边以redis为例，也可以用其他的(kafka)等等。"></a>filebeat的作用就是日志采集，将采集到的日志发送到中间件，我这边以redis为例，也可以用其他的(kafka)等等。</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">bash<span class="comment"># wget https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-6.7.0-linux-x86_64.tar.gz</span></span><br><span class="line">bash<span class="comment"># tar xf filebeat-6.7.0-linux-x86_64.tar.gz -C /usr/local/</span></span><br><span class="line">bash<span class="comment"># ln -s /usr/local/filebeat-6.7.0-linux-x86_64 /usr/local/filebeat</span></span><br></pre></td></tr></table></figure>
+<h4 id="编辑-usr-local-filebeat-filebeat-yml进行配置"><a href="#编辑-usr-local-filebeat-filebeat-yml进行配置" class="headerlink" title="编辑/usr/local/filebeat/filebeat.yml进行配置"></a>编辑/usr/local/filebeat/filebeat.yml进行配置</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#vim /usr/local/filebeat/filebeat.yml</span></span><br><span class="line">filebeat.inputs:</span><br><span class="line"></span><br><span class="line">- <span class="built_in">type</span>: <span class="built_in">log</span></span><br><span class="line">  paths:</span><br><span class="line">    - /data/logs/nginx/*/*.<span class="built_in">log</span>   <span class="comment">#nginx日志</span></span><br><span class="line">    - /data/logs/xxxx/*/*.<span class="built_in">log</span>   <span class="comment">#自主应用的日志</span></span><br><span class="line">  <span class="comment">#处理异常日志，合并成一行，方便查看</span></span><br><span class="line">  multiline.pattern: <span class="string">'^method|^params|^data|^[[:space:]]&#123;2,4&#125;|^Traceback|.*Error:|^[[:space:]]+at|^Caused by:|.*Exception'</span></span><br><span class="line">  multiline.negate: <span class="literal">false</span></span><br><span class="line">  multiline.match: after</span><br><span class="line">  fields:</span><br><span class="line">   feature: <span class="built_in">test</span>-host-192.168.1.2   <span class="comment">#自定义字段,用于区分服务器</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#redis地址</span></span><br><span class="line">output.redis:</span><br><span class="line">  hosts: [<span class="string">"192.168.1.3"</span>]</span><br><span class="line">  port: 6379</span><br><span class="line">  password: <span class="string">""</span></span><br></pre></td></tr></table></figure>
+<h4 id="将filebeat做成系统服务，filebeat-service文件内容如下："><a href="#将filebeat做成系统服务，filebeat-service文件内容如下：" class="headerlink" title="将filebeat做成系统服务，filebeat.service文件内容如下："></a>将filebeat做成系统服务，filebeat.service文件内容如下：</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">bash<span class="comment"># vim /etc/systemd/system/filebeat.yml</span></span><br><span class="line"><span class="comment"># It is not recommended to modify this file in-place, because it will</span></span><br><span class="line"><span class="comment"># be overwritten during package upgrades. If you want to add further</span></span><br><span class="line"><span class="comment"># options or overwrite existing ones then use</span></span><br><span class="line"><span class="comment"># See "man systemd.service" for details.</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Note that almost all daemon options could be specified in</span></span><br><span class="line"></span><br><span class="line">[Unit]</span><br><span class="line">Description=Filebeat Service</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/usr/<span class="built_in">local</span>/filebeat/filebeat -c /usr/<span class="built_in">local</span>/filebeat/filebeat.yml</span><br><span class="line">User=root</span><br><span class="line">Type=simple</span><br><span class="line">Restart=on-failure</span><br><span class="line"></span><br><span class="line"><span class="comment"># Hardening measures</span></span><br><span class="line"><span class="comment">####################</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Provide a private /tmp and /var/tmp.</span></span><br><span class="line">PrivateTmp=<span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Mount /usr, /boot/ and /etc read-only for the process.</span></span><br><span class="line"><span class="comment">#ProtectSystem=full</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Disallow the process and all of its children to gain</span></span><br><span class="line"><span class="comment"># new privileges through execve().</span></span><br><span class="line"><span class="comment">#NoNewPrivileges=true</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Use a new /dev namespace only populated with API pseudo devices</span></span><br><span class="line"><span class="comment"># such as /dev/null, /dev/zero and /dev/random.</span></span><br><span class="line"><span class="comment">#PrivateDevices=true</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Deny the creation of writable and executable memory mappings.</span></span><br><span class="line"><span class="comment">#MemoryDenyWriteExecute=true</span></span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+<h3 id="二、安装logstash"><a href="#二、安装logstash" class="headerlink" title="二、安装logstash"></a>二、安装logstash</h3><h4 id="logstash服务负责将redis的数据读取出来，经过处理写到elasticsearch。"><a href="#logstash服务负责将redis的数据读取出来，经过处理写到elasticsearch。" class="headerlink" title="logstash服务负责将redis的数据读取出来，经过处理写到elasticsearch。"></a>logstash服务负责将redis的数据读取出来，经过处理写到elasticsearch。</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">bash<span class="comment"># wget https://artifacts.elastic.co/downloads/logstash/logstash-6.7.0.tar.gz</span></span><br><span class="line">bash<span class="comment"># tar xf logstash-6.7.0.tar.gz -C /usr/local/</span></span><br><span class="line">bash<span class="comment"># ln -s /usr/local/logstash-6.7 /usr/local/logstash</span></span><br></pre></td></tr></table></figure>
+<p>编辑/usr/local/logstash/config/client-redis.conf进行配置<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line">bash<span class="comment"># vim /usr/local/logstash/config/client-redis.conf</span></span><br><span class="line">input &#123;</span><br><span class="line">    redis &#123;</span><br><span class="line">        host =&gt; <span class="string">"192.168.1.3"</span></span><br><span class="line">        port =&gt; <span class="string">"6379"</span></span><br><span class="line">        key =&gt; <span class="string">"filebeat"</span></span><br><span class="line">        data_type =&gt; <span class="string">"list"</span></span><br><span class="line">        password =&gt; <span class="string">""</span></span><br><span class="line">        threads =&gt; 10</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">filter&#123;</span><br><span class="line"> <span class="comment">####将nginx日志和自主应用日志分开处理</span></span><br><span class="line"> <span class="keyword">if</span> <span class="string">"/data/logs/nginx"</span> <span class="keyword">in</span> [<span class="built_in">source</span>] &#123;</span><br><span class="line">   grok &#123;</span><br><span class="line">    patterns_dir =&gt; <span class="string">"/usr/local/logstash/patterns"</span></span><br><span class="line">    match =&gt; &#123; <span class="string">"message"</span> =&gt; <span class="string">"%&#123;NGINXACCESS&#125;"</span> &#125;</span><br><span class="line">   &#125;</span><br><span class="line">   geoip &#123;</span><br><span class="line">      <span class="built_in">source</span> =&gt; <span class="string">"remote_addr"</span></span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   date &#123;</span><br><span class="line">      match =&gt; [ <span class="string">"log_timestamp"</span> , <span class="string">"dd/MMM/YYYY:HH:mm:ss Z"</span> ]</span><br><span class="line">      target =&gt; <span class="string">"@timestamp"</span></span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line"> &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">  grok &#123;</span><br><span class="line">   match =&gt; &#123;<span class="string">"message"</span> =&gt; <span class="string">"(?&lt;datetime&gt;\d&#123;4&#125;-\d&#123;2&#125;-\d&#123;2&#125;\s\d&#123;2&#125;:\d&#123;2&#125;:\d&#123;2&#125;\.\d&#123;3&#125;)"</span>&#125;</span><br><span class="line">  &#125;</span><br><span class="line">  date &#123;</span><br><span class="line">    match =&gt; [<span class="string">"datetime"</span>, <span class="string">"yyyy-MM-dd HH:mm:ss.SSS"</span>]</span><br><span class="line">    target =&gt; <span class="string">"@timestamp"</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> [<span class="built_in">source</span>] =~ <span class="string">"api"</span> or [<span class="built_in">source</span>] =~ <span class="string">"admin"</span> &#123;</span><br><span class="line">   ruby &#123;</span><br><span class="line">    code =&gt; <span class="string">"event.set('timestamp', event.get('@timestamp').time.localtime - 8*60*60)"</span></span><br><span class="line">   &#125;</span><br><span class="line">   ruby &#123;</span><br><span class="line">    code =&gt; <span class="string">"event.set('@timestamp', event.get('timestamp'))"</span></span><br><span class="line">   &#125;</span><br><span class="line">  &#125;</span><br><span class="line"> &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">###nginx和自主应用分别使用不同的模版和index</span></span><br><span class="line">output &#123;</span><br><span class="line">   <span class="keyword">if</span> <span class="string">"/data/logs/nginx"</span> <span class="keyword">in</span> [<span class="built_in">source</span>] &#123;</span><br><span class="line">     elasticsearch &#123;</span><br><span class="line">        hosts =&gt; [<span class="string">"127.0.0.1:10086"</span>]</span><br><span class="line">        index =&gt; <span class="string">"logstash-nginx-%&#123;+YYYY.MM.dd&#125;"</span></span><br><span class="line">        template =&gt; <span class="string">"/usr/local/logstash/config/nginx-template.json"</span></span><br><span class="line">        template_name =&gt; <span class="string">"wb-nginx"</span></span><br><span class="line">        template_overwrite =&gt; <span class="literal">true</span></span><br><span class="line">     &#125;</span><br><span class="line">   &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">    elasticsearch &#123;</span><br><span class="line">        hosts =&gt; [<span class="string">"127.0.0.1:10086"</span>]</span><br><span class="line">        index =&gt; <span class="string">"logstash-%&#123;+YYYY.MM.dd&#125;"</span></span><br><span class="line">        template =&gt; <span class="string">"/usr/local/logstash/config/app-template.json"</span></span><br><span class="line">        template_name =&gt; <span class="string">"wb_index"</span></span><br><span class="line">        template_overwrite =&gt; <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">   &#125;</span><br><span class="line">    stdout &#123;codec =&gt; rubydebug&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="编辑-usr-local-logstash-config-nginx-template-json"><a href="#编辑-usr-local-logstash-config-nginx-template-json" class="headerlink" title="编辑/usr/local/logstash/config/nginx-template.json"></a>编辑/usr/local/logstash/config/nginx-template.json</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line">bash<span class="comment"># vim /usr/local/logstash/config/nginx-template.json</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">"aliases"</span>: &#123;&#125;,</span><br><span class="line">  <span class="string">"index_patterns"</span>: [</span><br><span class="line">    <span class="string">"logstash-nginx-*"</span></span><br><span class="line">  ],</span><br><span class="line">  <span class="string">"mappings"</span>: &#123;</span><br><span class="line">    <span class="string">"doc"</span>: &#123;</span><br><span class="line">      <span class="string">"properties"</span>: &#123;</span><br><span class="line">        <span class="string">"body_bytes_sent"</span>: &#123;</span><br><span class="line">          <span class="string">"type"</span>: <span class="string">"long"</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="string">"request_length"</span>: &#123;</span><br><span class="line">          <span class="string">"type"</span>: <span class="string">"long"</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="string">"remote_addr"</span>: &#123;</span><br><span class="line">          <span class="string">"type"</span>: <span class="string">"ip"</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="string">"x_forword_for"</span>: &#123;</span><br><span class="line">          <span class="string">"type"</span>: <span class="string">"keyword"</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="string">"geoip"</span>: &#123;</span><br><span class="line">          <span class="string">"dynamic"</span>: <span class="literal">true</span>,</span><br><span class="line">          <span class="string">"properties"</span>: &#123;</span><br><span class="line">            <span class="string">"location"</span>: &#123;</span><br><span class="line">              <span class="string">"type"</span>: <span class="string">"geo_point"</span></span><br><span class="line">            &#125;</span><br><span class="line">          &#125;,</span><br><span class="line">          <span class="string">"type"</span>: <span class="string">"object"</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="string">"request_time"</span>: &#123;</span><br><span class="line">          <span class="string">"type"</span>: <span class="string">"float"</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="string">"upstream_response_time"</span>: &#123;</span><br><span class="line">          <span class="string">"type"</span>: <span class="string">"float"</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="string">"upstream_status"</span>: &#123;</span><br><span class="line">          <span class="string">"type"</span>: <span class="string">"integer"</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="string">"http_status"</span>: &#123;</span><br><span class="line">          <span class="string">"type"</span>: <span class="string">"integer"</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">"order"</span>: 1,</span><br><span class="line">  <span class="string">"version"</span>: 60001,</span><br><span class="line">  <span class="string">"settings"</span>: &#123;</span><br><span class="line">    <span class="string">"index"</span>: &#123;</span><br><span class="line">      <span class="string">"number_of_shards"</span>: <span class="string">"1"</span>,</span><br><span class="line">      <span class="string">"number_of_replicas"</span>: <span class="string">"0"</span>,</span><br><span class="line">      <span class="string">"refresh_interval"</span>: <span class="string">"5s"</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="编辑-usr-local-logstash-config-app-template-json"><a href="#编辑-usr-local-logstash-config-app-template-json" class="headerlink" title="编辑/usr/local/logstash/config/app-template.json"></a>编辑/usr/local/logstash/config/app-template.json</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line">bash<span class="comment"># vim /usr/local/logstash/config/app-template.json</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">"order"</span>: 1,</span><br><span class="line">    <span class="string">"version"</span>: 60002,</span><br><span class="line">    <span class="string">"index_patterns"</span>: [</span><br><span class="line">      <span class="string">"logstash-*"</span></span><br><span class="line">    ],</span><br><span class="line">    <span class="string">"settings"</span>: &#123;</span><br><span class="line">      <span class="string">"index"</span>: &#123;</span><br><span class="line">        <span class="string">"refresh_interval"</span>: <span class="string">"5s"</span>,</span><br><span class="line">        <span class="string">"number_of_shards"</span>: 1,</span><br><span class="line">        <span class="string">"number_of_replicas"</span>: 0</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="string">"mappings"</span>: &#123;</span><br><span class="line">      <span class="string">"_default_"</span>: &#123;</span><br><span class="line">        <span class="string">"dynamic_templates"</span>: [</span><br><span class="line">          &#123;</span><br><span class="line">            <span class="string">"message_field"</span>: &#123;</span><br><span class="line">              <span class="string">"path_match"</span>: <span class="string">"message"</span>,</span><br><span class="line">              <span class="string">"match_mapping_type"</span>: <span class="string">"string"</span>,</span><br><span class="line">              <span class="string">"mapping"</span>: &#123;</span><br><span class="line">                <span class="string">"type"</span>: <span class="string">"text"</span>,</span><br><span class="line">                <span class="string">"norms"</span>: <span class="literal">false</span></span><br><span class="line">              &#125;</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;,</span><br><span class="line">          &#123;</span><br><span class="line">            <span class="string">"string_fields"</span>: &#123;</span><br><span class="line">              <span class="string">"match"</span>: <span class="string">"*"</span>,</span><br><span class="line">              <span class="string">"match_mapping_type"</span>: <span class="string">"string"</span>,</span><br><span class="line">              <span class="string">"mapping"</span>: &#123;</span><br><span class="line">                <span class="string">"type"</span>: <span class="string">"text"</span>,</span><br><span class="line">                <span class="string">"norms"</span>: <span class="literal">false</span>,</span><br><span class="line">                <span class="string">"fields"</span>: &#123;</span><br><span class="line">                  <span class="string">"keyword"</span>: &#123;</span><br><span class="line">                    <span class="string">"type"</span>: <span class="string">"keyword"</span>,</span><br><span class="line">                    <span class="string">"ignore_above"</span>: 256</span><br><span class="line">                  &#125;</span><br><span class="line">                &#125;</span><br><span class="line">              &#125;</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;</span><br><span class="line">        ],</span><br><span class="line">        <span class="string">"properties"</span>: &#123;</span><br><span class="line">          <span class="string">"@timestamp"</span>: &#123;</span><br><span class="line">            <span class="string">"type"</span>: <span class="string">"date"</span></span><br><span class="line">          &#125;,</span><br><span class="line">          <span class="string">"@version"</span>: &#123;</span><br><span class="line">            <span class="string">"type"</span>: <span class="string">"keyword"</span></span><br><span class="line">          &#125;,</span><br><span class="line">          <span class="string">"geoip"</span>: &#123;</span><br><span class="line">            <span class="string">"dynamic"</span>: <span class="literal">true</span>,</span><br><span class="line">            <span class="string">"properties"</span>: &#123;</span><br><span class="line">              <span class="string">"ip"</span>: &#123;</span><br><span class="line">                <span class="string">"type"</span>: <span class="string">"ip"</span></span><br><span class="line">              &#125;,</span><br><span class="line">              <span class="string">"location"</span>: &#123;</span><br><span class="line">                <span class="string">"type"</span>: <span class="string">"geo_point"</span></span><br><span class="line">              &#125;,</span><br><span class="line">              <span class="string">"latitude"</span>: &#123;</span><br><span class="line">                <span class="string">"type"</span>: <span class="string">"half_float"</span></span><br><span class="line">              &#125;,</span><br><span class="line">              <span class="string">"longitude"</span>: &#123;</span><br><span class="line">                <span class="string">"type"</span>: <span class="string">"half_float"</span></span><br><span class="line">              &#125;</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="string">"aliases"</span>: &#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="编辑nginx日志的匹配模版文件"><a href="#编辑nginx日志的匹配模版文件" class="headerlink" title="编辑nginx日志的匹配模版文件"></a>编辑nginx日志的匹配模版文件</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">bash<span class="comment"># mkdir /usr/local/logstash/patterns</span></span><br><span class="line">bash<span class="comment"># vi /usr/local/logstash/patterns/nginx</span></span><br><span class="line">URIPARM1 [A-Za-z0-9$.+!*<span class="string">'|()&#123;&#125;,~@#%&amp;/=:;^\\_&lt;&gt;`?\-\[\]]*</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">URIPATH1 (?:/[\\A-Za-z0-9$.+!*'</span>()&#123;&#125;,~:;=@<span class="comment">#% \[\]_&lt;&gt;^\-&amp;?]*)+</span></span><br><span class="line"></span><br><span class="line">HOSTNAME1 \b(?:[0-9A-Za-z_\-][0-9A-Za-z-_\-]&#123;0,62&#125;)(?:\.(?:[0-9A-Za-z_\-][0-9A-Za-z-:\-_]&#123;0,62&#125;))*(\.?|\b)</span><br><span class="line"></span><br><span class="line">STATUS ([0-9.]&#123;0,3&#125;[, ]&#123;0,2&#125;)+</span><br><span class="line"></span><br><span class="line">HOSTPORT1 (%&#123;IP&#125;:%&#123;POSINT&#125;[, ]&#123;0,2&#125;)+</span><br><span class="line"></span><br><span class="line">FORWORD (?:%&#123;IP&#125;[,]?[ ]?)+|%&#123;WORD&#125;</span><br><span class="line"></span><br><span class="line">URIPARM [A-Za-z0-9$.+!*<span class="string">'|()&#123;&#125;,~@#%&amp;/=:;_?\-\[\]]*</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">URIPATH (?:/[A-Za-z0-9$.+!*'</span>()&#123;&#125;,~:;=@<span class="comment">#%&amp;_\- ]*)+</span></span><br><span class="line"></span><br><span class="line">URI1 (%&#123;URIPROTO&#125;://)?(?:%&#123;USER&#125;(?::[^@]*)?@)?(?:%&#123;URIHOST&#125;)?(?:%&#123;URIPATHPARAM&#125;)?</span><br><span class="line"></span><br><span class="line">NGINXACCESS %&#123;IPORHOST:remote_addr&#125; - (%&#123;USERNAME:user&#125;|-) \[%&#123;HTTPDATE:log_timestamp&#125;\] \<span class="string">"%&#123;WORD:request_method&#125; %&#123;URIPATH1:uri&#125; HTTP/%&#123;NUMBER:http_version&#125;\" %&#123;BASE10NUM:http_status&#125; (?:%&#123;BASE10NUM:body_bytes_sent&#125;|-) \"(?:%&#123;GREEDYDATA:http_referrer&#125;|-)\" \"(%&#123;GREEDYDATA:user_agent&#125;|-)\" \"(%&#123;FORWORD:x_forword_for&#125;|-)\" \"(%&#123;FORWORD:x_real_ip&#125;|-)\" \"(%&#123;IPORHOST:domain&#125;|%&#123;URIHOST:domain&#125;|-)\" \"(%&#123;IPORHOST:http_x_host&#125;|%&#123;URIHOST:http_x_host&#125;|-)\" \"(%&#123;BASE16FLOAT:request_time&#125;|-)\" \"(?:%&#123;BASE10NUM:request_length&#125;|-)\" \"(?:%&#123;HOSTPORT1:upstream_addr&#125;|-)\" \"(%&#123;BASE16FLOAT:upstream_response_time&#125;|-)\" \"(%&#123;BASE10NUM:upstream_status&#125;|-)\"</span></span><br></pre></td></tr></table></figure>
+<h4 id="nginx的日志格式为"><a href="#nginx的日志格式为" class="headerlink" title="nginx的日志格式为"></a>nginx的日志格式为</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">log_format main	<span class="string">'$remote_addr - $remote_user [$time_local] "$request" '</span></span><br><span class="line">		<span class="string">'$status $body_bytes_sent "$http_referer" '</span></span><br><span class="line">		<span class="string">'"$http_user_agent" "$http_x_forwarded_for" "$http_x_real_ip" "$host" "$http_x_host" "$request_time" "$request_length" '</span></span><br><span class="line">		<span class="string">'"$upstream_addr" "$upstream_response_time" "$upstream_status"'</span>;</span><br></pre></td></tr></table></figure>
+<h4 id="使用supervisor进行管理logstash进程"><a href="#使用supervisor进行管理logstash进程" class="headerlink" title="使用supervisor进行管理logstash进程"></a>使用supervisor进行管理logstash进程</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">bash<span class="comment"># vim /etc/supervisor.d/logstash.ini</span></span><br><span class="line">[program:logstash]</span><br><span class="line">directory=/usr/<span class="built_in">local</span>/logstash</span><br><span class="line"><span class="built_in">command</span>=/usr/<span class="built_in">local</span>/logstash/bin/logstash -f /usr/<span class="built_in">local</span>/logstash/config/client-redis.conf</span><br><span class="line">environment=JAVA_HOME=/usr/<span class="built_in">local</span>/jdk/</span><br><span class="line">user=onecafe</span><br><span class="line">autostart=<span class="literal">true</span></span><br><span class="line">autorestart=<span class="literal">true</span></span><br><span class="line">startretries=1</span><br><span class="line">startsecs=1</span><br><span class="line">redirect_stderr=<span class="literal">true</span></span><br><span class="line">stdout_logfile=/data/logs/logstash/logstash.log</span><br><span class="line">stdout_logfile_maxbytes=5MB</span><br><span class="line">stdout_logfile_backups=5</span><br><span class="line">stderr_logfile=/data/logs/logstash/logstash-err.log</span><br><span class="line">stderr_logfile_maxbytes=5MB</span><br><span class="line">stderr_logfile_backups=5</span><br><span class="line">stopasgroup=<span class="literal">true</span></span><br><span class="line">killasgroup=<span class="literal">true</span></span><br></pre></td></tr></table></figure>
+<h3 id="三、启动logstash和filebeat"><a href="#三、启动logstash和filebeat" class="headerlink" title="三、启动logstash和filebeat"></a>三、启动logstash和filebeat</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">bash<span class="comment"># systemctl start filebeat</span></span><br><span class="line">bash<span class="comment"># supervisorctl start logstash</span></span><br></pre></td></tr></table></figure>
+<h4 id="到这边，整个elk就算搭建好，下一节继续讲解kibana的使用。"><a href="#到这边，整个elk就算搭建好，下一节继续讲解kibana的使用。" class="headerlink" title="到这边，整个elk就算搭建好，下一节继续讲解kibana的使用。"></a>到这边，整个elk就算搭建好，下一节继续讲解kibana的使用。</h4>
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+      <div>
+        <div id="reward-container">
+  <div></div>
+  <button id="reward-button" disable="enable" onclick="var qr = document.getElementById(&quot;qr&quot;); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+
+    
+      
+      
+        
+      
+      <div style="display: inline-block">
+        <img src="https://res.cloudinary.com/dc6pgic7p/image/upload/v1553325075/weixin.jpg" alt="teatea 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+      
+      
+        
+      
+      <div style="display: inline-block">
+        <img src="/images/zhifubao.jpg" alt="teatea 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+      <div>
+        
+
+
+
+
+  
+
+
+
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>teatea</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    
+    <a href="https://blog.teatea.ga/ELK-使用系列-二、logstash和filebeat安装.html" title="ELK 使用系列 二、logstash和filebeat安装">https://blog.teatea.ga/ELK-使用系列-二、logstash和filebeat安装.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/zh-CN" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/ELK-使用系列-一、ELK安装.html" rel="next" title="ELK 使用系列:一、ELK安装">
+                <i class="fa fa-chevron-left"></i> ELK 使用系列:一、ELK安装
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/gitlab升级.html" rel="prev" title="gitlab升级">
+                gitlab升级 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="gitalk-container">
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://res.cloudinary.com/dc6pgic7p/image/upload/v1554968110/avatar.png" alt="teatea">
+            
+              <p class="site-author-name" itemprop="name">teatea</p>
+              <div class="site-description motion-element" itemprop="description">生命不息，折腾不止！</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                    <span class="site-state-item-count">1</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/yubinhong" title="GitHub &rarr; https://github.com/yubinhong" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:yubinhong1990@gmail.com" title="E-Mail &rarr; mailto:yubinhong1990@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
+          
+
+          
+             <div class="cc-license motion-element" itemprop="license">
+              
+              
+                
+              
+              
+              
+              <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/zh-CN" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+             </div>
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#上一节讲到elasticsearch和kibana的安装，这一节就来讲logstash和fielbeat安装。"><span class="nav-number">1.</span> <span class="nav-text">上一节讲到elasticsearch和kibana的安装，这一节就来讲logstash和fielbeat安装。</span></a></li></ol><li class="nav-item nav-level-3"><a class="nav-link" href="#一、filebeat的安装和配置"><span class="nav-number"></span> <span class="nav-text">一、filebeat的安装和配置</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#filebeat的作用就是日志采集，将采集到的日志发送到中间件，我这边以redis为例，也可以用其他的-kafka-等等。"><span class="nav-number">1.</span> <span class="nav-text">filebeat的作用就是日志采集，将采集到的日志发送到中间件，我这边以redis为例，也可以用其他的(kafka)等等。</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#编辑-usr-local-filebeat-filebeat-yml进行配置"><span class="nav-number">2.</span> <span class="nav-text">编辑/usr/local/filebeat/filebeat.yml进行配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#将filebeat做成系统服务，filebeat-service文件内容如下："><span class="nav-number">3.</span> <span class="nav-text">将filebeat做成系统服务，filebeat.service文件内容如下：</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、安装logstash"><span class="nav-number"></span> <span class="nav-text">二、安装logstash</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#logstash服务负责将redis的数据读取出来，经过处理写到elasticsearch。"><span class="nav-number">1.</span> <span class="nav-text">logstash服务负责将redis的数据读取出来，经过处理写到elasticsearch。</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#编辑-usr-local-logstash-config-nginx-template-json"><span class="nav-number">2.</span> <span class="nav-text">编辑/usr/local/logstash/config/nginx-template.json</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#编辑-usr-local-logstash-config-app-template-json"><span class="nav-number">3.</span> <span class="nav-text">编辑/usr/local/logstash/config/app-template.json</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#编辑nginx日志的匹配模版文件"><span class="nav-number">4.</span> <span class="nav-text">编辑nginx日志的匹配模版文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#nginx的日志格式为"><span class="nav-number">5.</span> <span class="nav-text">nginx的日志格式为</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用supervisor进行管理logstash进程"><span class="nav-number">6.</span> <span class="nav-text">使用supervisor进行管理logstash进程</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、启动logstash和filebeat"><span class="nav-number"></span> <span class="nav-text">三、启动logstash和filebeat</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#到这边，整个elk就算搭建好，下一节继续讲解kibana的使用。"><span class="nav-number">1.</span> <span class="nav-text">到这边，整个elk就算搭建好，下一节继续讲解kibana的使用。</span></a></li></ol></li></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">teatea</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">41k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">37 分钟</span>
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.0.1</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+  
+
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+    
+
+<script src="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+
+
+<script src="//cdn.jsdelivr.net/npm/js-md5@0.7.3/src/md5.min.js"></script>
+
+<script>
+  var gitalk = new Gitalk({
+    clientID: '2b85de6b1415eaa62bfe',
+    clientSecret: '368d0b08b22c66814738061432ee042d1e66af02',
+    repo: 'blog.teatea.ga',
+    owner: 'yubinhong',
+    admin: ['yubinhong'],
+    id: md5(location.pathname),
+    
+      language: 'zh-CN',
+    
+    distractionFreeMode: 'true'
+  });
+  gitalk.render('gitalk-container');
+</script>
+
+  
+
+
+  
+  <script>
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url).replace(/\/{2,}/g, '/');
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x"></i></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x"></i></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+        if (result) $(this).text('复制成功');
+        else $(this).text('复制失败');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+  
+
+  
+
+</body>
+</html>
