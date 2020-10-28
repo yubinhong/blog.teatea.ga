@@ -3,7 +3,7 @@
   <entry>
     <title><![CDATA[jenkins更换国内源]]></title>
     <url>%2Fjenkins%E6%9B%B4%E6%8D%A2%E5%9B%BD%E5%86%85%E6%BA%90.html</url>
-    <content type="text"><![CDATA[更换国内源123456$ cd &#123;你的Jenkins工作目录&#125;/updates #进入更新配置位置$ vim default.json #这个Json文件与上边的配置文件是相同的# 使用vim的命令，如下，替换所有插件下载的url:1,$s/http:\/\/updates.jenkins-ci.org\/download/https:\/\/mirrors.tuna.tsinghua.edu.cn\/jenkins/g# 替换连接测试url:1,$s/http:\/\/www.google.com/https:\/\/www.baidu.com/g]]></content>
+    <content type="text"><![CDATA[更换国内源123456$ cd &#123;你的Jenkins工作目录&#125;/updates #进入更新配置位置$ vim default.json #这个Json文件与上边的配置文件是相同的# 使用vim的命令，如下，替换所有插件下载的url:1,$s/https:\/\/updates.jenkins.io\/download/https:\/\/mirrors.tuna.tsinghua.edu.cn\/jenkins/g# 替换连接测试url:1,$s/http:\/\/www.google.com/https:\/\/www.baidu.com/g]]></content>
       <tags>
         <tag>jenkins</tag>
       </tags>
