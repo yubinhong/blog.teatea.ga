@@ -1,3 +1,11 @@
+---
+title: k8s部署
+date: 2023-11-21 16:02:22
+tags:
+categories: k8s
+keywords: k8s
+description:
+---
 # k8s部署
 
 ## 节点配置
