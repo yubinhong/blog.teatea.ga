@@ -944,7 +944,7 @@ kubectl apply -f recommended.yaml
 kubectl get svc -n kubernetes-dashboard
 ```
 
-![Image.png](k8s%E9%83%A8%E7%BD%B2/Image.png)
+![Image.png](/images/k8s%E9%83%A8%E7%BD%B2/Image.png)
 
 - 浏览器访问Dashboard
 ```bash
@@ -952,7 +952,7 @@ kubectl get svc -n kubernetes-dashboard
 kubectl proxy
 ```
 
-![Image.png](k8s%E9%83%A8%E7%BD%B2/Image%20(2).png)
+![Image.png](/images/k8s%E9%83%A8%E7%BD%B2/Image%20(2).png)
 
    使用`Token`登录
 
@@ -1004,7 +1004,7 @@ kubectl apply -f dash.yaml
 kubectl -n kubernetes-dashboard create token admin-user
 ```
 
-![cb8265989dab4ccda66c641084e96c32~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp](k8s%E9%83%A8%E7%BD%B2/cb8265989dab4ccda66c641084e96c32~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp)
+![cb8265989dab4ccda66c641084e96c32~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp](/images/k8s%E9%83%A8%E7%BD%B2/cb8265989dab4ccda66c641084e96c32~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp)
 
    我们把生成的`Token`拷贝好贴进浏览器对应的输入框中并点击`登录`按钮：
 
