@@ -952,7 +952,7 @@ kubectl get svc -n kubernetes-dashboard
 kubectl proxy
 ```
 
-![Image.png](/images/k8s%E9%83%A8%E7%BD%B2/Image%20(2).png)
+![Image_2.png](/images/k8s%E9%83%A8%E7%BD%B2/Image_2.png)
 
    使用`Token`登录
 
