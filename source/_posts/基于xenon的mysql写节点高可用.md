@@ -58,156 +58,161 @@ Xenon [ˈziːnɒn] ([https://github.com/radondb/xenon](https://github.com/radond
 # **Xenon 部署**
 
 - ## 安装Xenon软件
-
-`mkdir -p /usr/local/xenon && tar xvf xenon.tar -C /usr/local/xenon/`
+``` bash
+mkdir -p /usr/local/xenon && tar xvf xenon.tar -C /usr/local/xenon/
+```
 
 - ## 配置变量文件
-
-`echo` `"/usr/local/xenon/xenon.conf.json"` `>/usr/local/xenon/config.path`
+``` bash
+echo "/usr/local/xenon/xenon.conf.json" >/usr/local/xenon/config.path
+```
 
 - ## 修改配置参数
+``` bash
+cat > /usr/local/xenon/xenon.conf.json <<  EOF
 
-`cat` `>` `/usr/local/xenon/xenon``.conf.json <<  EOF`
+{
 
-`{`
+"server":{
 
-`"server"``:{`
+"endpoint":"192.168.94.101:8801"
 
-`"endpoint"``:``"192.168.94.101:8801"`
+},
 
-`},`
+"raft":{
 
-`"raft"``:{`
+"meta-datadir":"/usr/local/xenon/raft.meta",
 
-`"meta-datadir"``:``"/usr/local/xenon/raft.meta"``,`
+"heartbeat-timeout":1000,
 
-`"heartbeat-timeout"``:1000,`
+"election-timeout":3000,
 
-`"election-timeout"``:3000,`
+"admit-defeat-hearbeat-count": 5,
 
-`"admit-defeat-hearbeat-count"``: 5,`
+"purge-binlog-disabled": true,
 
-`"purge-binlog-disabled"``:` `true``,`
+"leader-start-command":"sudo /sbin/ip a a 192.168.94.105/24 dev ens192 && arping -c 3 -A 192.168.94.105 -I ens192",
 
-`"leader-start-command"``:``"sudo /sbin/ip a a 192.168.94.105/24 dev ens192 && arping -c 3 -A 192.168.94.105 -I ens192"``,`
+"leader-stop-command":"sudo /sbin/ip a d 192.168.94.105/24 dev ens192"
 
-`"leader-stop-command"``:``"sudo /sbin/ip a d 192.168.94.105/24 dev ens192"`
+},
 
-`},`
+"mysql":{
 
-`"mysql"``:{`
+"admin":"xenon",
 
-`"admin"``:``"xenon"``,`
+"passwd":"Mysql#xenon#123",
 
-`"passwd"``:``"Mysql#xenon#123"``,`
+"host":"127.0.0.1",
 
-`"host"``:``"127.0.0.1"``,`
+"port":3306,
 
-`"port"``:3306,`
+"basedir":"/usr/local/mysql",
 
-`"basedir"``:``"/usr/local/mysql"``,`
+"defaults-file":"/data/mysql/3306/my.cnf",
 
-`"defaults-file"``:``"/data/mysql/3306/my.cnf"``,`
+"ping-timeout":1000
 
-`"ping-timeout"``:1000`
+},
 
-`},`
+"replication":{
 
-`"replication"``:{`
+"user":"repl",
 
-`"user"``:``"repl"``,`
+"passwd":"Mysql#repl#123"
 
-`"passwd"``:``"Mysql#repl#123"`
+},
 
-`},`
+"rpc":{
 
-`"rpc"``:{`
+"request-timeout":500
 
-`"request-timeout"``:500`
+},
 
-`},`
+"log":{
 
-`"log"``:{`
+"level":"ERROR"
 
-`"level"``:``"ERROR"`
+}
 
-`}`
+}
 
-`}`
-
-`EOF`
+EOF
 
 - ## 配置后台服务
 
-`# 配置后台服务`
+# 配置后台服务
+``` bash
+cat > /usr/lib/systemd/system/xenon.service <<  EOF
 
-`cat > /usr/lib/systemd/system/xenon.service <<  EOF`
+[Unit]
 
-`[Unit]`
+Description=xenon service
 
-`Description=xenon service`
+After=network.target
 
-`After=network.target`
+[Service]
 
-`[Service]`
+Type=simple
 
-`Type=simple`
+User=root
 
-`User=root`
+Group=root
 
-`Group=root`
+ExecStart=/usr/local/xenon/xenon -c /usr/local/xenon/xenon.conf.json
 
-`ExecStart=/usr/local/xenon/xenon -c /usr/local/xenon/xenon.conf.json`
+Restart=on-failure
 
-`Restart=on-failure`
+[Install]
 
-`[Install]`
+WantedBy=multi-user.target
 
-`WantedBy=multi-user.target`
+EOF
+```
 
-`EOF`
+# 启动 xenon 后台服务
+``` bash
+systemctl daemon-reload
 
-`# 启动 xenon 后台服务`
+systemctl enable xenon
 
-`systemctl daemon-reload`
+systemctl start  xenon
 
-`systemctl enable xenon`
-
-`systemctl start  xenon`
-
-`systemctl status xenon`
+systemctl status xenon
+```
 
 - ## 添加节点
 
-`注: 每个节点都要执行`
-
-`/usr/local/xenon/xenoncli cluster add` `192.168``.``94.100``:``8801``,``192.168``.``94.101``:``8801``,``192.168``.``94.102``:``8801`
+注: 每个节点都要执行
+``` bash
+/usr/local/xenon/xenoncli cluster add 192.168.94.100:8801,192.168.94.101:8801,192.168.94.102:8801
+```
 
 - ## 查看状态
+``` bash
+/usr/local/xenon/xenoncli cluster status
 
-`/usr/local/xenon/xenoncli cluster status`
++---------------------+-------------------------------+------------+---------+--------------------------+---------------------+----------------+---------------------+
 
-`+---------------------+-------------------------------+------------+---------+--------------------------+---------------------+----------------+---------------------+`
+|         ID          |             Raft              |   Mysqld   | Monitor |          Backup          |        Mysql        | IO/SQL_RUNNING |      MyLeader       |`
 
-`|         ID          |             Raft              |   Mysqld   | Monitor |          Backup          |        Mysql        | IO/SQL_RUNNING |      MyLeader       |`
++---------------------+-------------------------------+------------+--------+--------------------------+---------------------+----------------+---------------------+
 
-`+---------------------+-------------------------------+------------+---------+--------------------------+---------------------+----------------+---------------------+`
+| 192.168.94.101:8801 | [ViewID:3 EpochID:0]@FOLLOWER | NOTRUNNING | ON      | state:[NONE]?            | [ALIVE] [READONLY]  | [true/true]    | 192.168.94.100:8801 |
 
-`|` `192.168``.``94.101``:``8801` `| [ViewID:``3` `EpochID:``0``]``@FOLLOWER` `| NOTRUNNING | ON      | state:[NONE]?            | [ALIVE] [READONLY]  | [``true``/``true``]    |` `192.168``.``94.100``:``8801` `|`
+|                     |                               |            |         | LastError:               |                     |                |                     |
 
-`|                     |                               |            |         | LastError:               |                     |                |                     |`
++---------------------+-------------------------------+------------+---------+--------------------------+---------------------+----------------+---------------------+
 
-`+---------------------+-------------------------------+------------+---------+--------------------------+---------------------+----------------+---------------------+`
+| 192.168.94.100:8801 | [ViewID:3 EpochID:0]@LEADER   | NOTRUNNING | ON      | state:[NONE]?            | [ALIVE] [READWRITE] | [true/true]    | 192.168.94.100:8801 |
 
-`|` `192.168``.``94.100``:``8801` `| [ViewID:``3` `EpochID:``0``]``@LEADER`   `| NOTRUNNING | ON      | state:[NONE]?            | [ALIVE] [READWRITE] | [``true``/``true``]    |` `192.168``.``94.100``:``8801` `|`
+|                     |                               |            |         | LastError:               |                     |                |                     |
 
-`|                     |                               |            |         | LastError:               |                     |                |                     |`
++---------------------+-------------------------------+------------+---------+--------------------------+---------------------+----------------+---------------------+
 
-`+---------------------+-------------------------------+------------+---------+--------------------------+---------------------+----------------+---------------------+`
+| 192.168.94.102:8801 | [ViewID:3 EpochID:0]@FOLLOWER | NOTRUNNING | ON      | state:[NONE]?            | [ALIVE] [READONLY]  | [true/true]    | 192.168.94.100:8801 |
 
-`|` `192.168``.``94.102``:``8801` `| [ViewID:``3` `EpochID:``0``]``@FOLLOWER` `| NOTRUNNING | ON      | state:[NONE]?            | [ALIVE] [READONLY]  | [``true``/``true``]    |` `192.168``.``94.100``:``8801` `|`
+|                     |                               |            |         | LastError:               |                     |                |                     |
 
-`|                     |                               |            |         | LastError:               |                     |                |                     |`
-
-`+---------------------+-------------------------------+------------+---------+--------------------------+---------------------+----------------+---------------------+`
-
++---------------------+-------------------------------+------------+---------+--------------------------+---------------------+----------------+---------------------+
+```
