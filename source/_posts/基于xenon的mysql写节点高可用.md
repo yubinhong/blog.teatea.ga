@@ -25,6 +25,7 @@ user            = mysql
 bind-address    = 0.0.0.0
 port            = 3306
 server-id       = 3
+default_authentication_plugin=mysql_native_password
 
 # 数据库文件和日志
 datadir         = /var/lib/mysql
