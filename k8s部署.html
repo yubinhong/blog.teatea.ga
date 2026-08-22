@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222"/>
+<meta name="google-site-verification" content="-LvJ2MYKS-LMmbiiWaR7rL6AY0kwJa6QzPsoDVP2WDg" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2"/>
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1"/>
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Pisces',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+<script data-ad-client="ca-pub-3477951175425866" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+
+  
+
+
+
+
+  <meta name="description" content="k8s部署节点配置 192.168.1.6 k8s-master   192.168.1.8 k8s-node1   192.168.1.9 k8s-node2   处理器、内存、磁盘配置  CPU：2核  内存：4G  硬盘：50G   修改系统设置在Ubuntu 22.04安装完毕后，我们需要做以下检查和操作：  检查网络  在每个节点安装成功后，需要通过ping命令检查以下几项：  1.是否">
+<meta property="og:type" content="article">
+<meta property="og:title" content="k8s部署">
+<meta property="og:url" content="https://blog.iuhui.site/k8s%E9%83%A8%E7%BD%B2.html">
+<meta property="og:site_name" content="syin的博客">
+<meta property="og:description" content="k8s部署节点配置 192.168.1.6 k8s-master   192.168.1.8 k8s-node1   192.168.1.9 k8s-node2   处理器、内存、磁盘配置  CPU：2核  内存：4G  硬盘：50G   修改系统设置在Ubuntu 22.04安装完毕后，我们需要做以下检查和操作：  检查网络  在每个节点安装成功后，需要通过ping命令检查以下几项：  1.是否">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://blog.iuhui.site/images/k8s%E9%83%A8%E7%BD%B2/Image.png">
+<meta property="og:image" content="https://blog.iuhui.site/images/k8s%E9%83%A8%E7%BD%B2/Image_2.png">
+<meta property="og:image" content="https://blog.iuhui.site/images/k8s%E9%83%A8%E7%BD%B2/cb8265989dab4ccda66c641084e96c32~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp">
+<meta property="article:published_time" content="2023-11-21T16:02:22.000Z">
+<meta property="article:modified_time" content="2026-08-12T15:08:49.814Z">
+<meta property="article:author" content="teatea">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://blog.iuhui.site/images/k8s%E9%83%A8%E7%BD%B2/Image.png">
+
+
+
+
+
+
+  <link rel="canonical" href="https://blog.iuhui.site/k8s部署.html"/>
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>k8s部署 | syin的博客</title>
+  
+
+
+
+
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?69f744142ecee25c84cc1d1c16d9aa9e";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<meta name="generator" content="Hexo 8.1.2"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">syin的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br/>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br/>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br/>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-commonweal">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/404.html" rel="section"><i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br/>公益 404</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br/>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://blog.iuhui.site/k8s%E9%83%A8%E7%BD%B2.html"/>
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="teatea"/>
+      <meta itemprop="description" content="生命不息，折腾不止！"/>
+      <meta itemprop="image" content="https://res.cloudinary.com/dc6pgic7p/image/upload/v1554968110/avatar.png"/>
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="syin的博客"/>
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">k8s部署
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2023-11-21 16:02:22" itemprop="dateCreated datePublished" datetime="2023-11-21T16:02:22+00:00">2023-11-21</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2026-08-12 15:08:49" itemprop="dateModified" datetime="2026-08-12T15:08:49+00:00">2026-08-12</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/k8s/" itemprop="url" rel="index"><span itemprop="name">k8s</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="post-meta-item-icon"
+            >
+            <i class="fa fa-eye"></i>
+             阅读次数： 
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">25k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">23 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="k8s部署"><a href="#k8s部署" class="headerlink" title="k8s部署"></a>k8s部署</h1><h2 id="节点配置"><a href="#节点配置" class="headerlink" title="节点配置"></a>节点配置</h2><blockquote>
+<p>192.168.1.6 k8s-master</p>
+</blockquote>
+<blockquote>
+<p>192.168.1.8 k8s-node1</p>
+</blockquote>
+<blockquote>
+<p>192.168.1.9 k8s-node2</p>
+</blockquote>
+<ul>
+<li><p>处理器、内存、磁盘配置</p>
+<p> CPU：2核</p>
+<p> 内存：4G</p>
+<p> 硬盘：50G</p>
+</li>
+</ul>
+<h2 id="修改系统设置"><a href="#修改系统设置" class="headerlink" title="修改系统设置"></a>修改系统设置</h2><p>在<code>Ubuntu 22.04</code>安装完毕后，我们需要做以下检查和操作：</p>
+<ul>
+<li><p>检查网络</p>
+<p> 在每个节点安装成功后，需要通过<code>ping</code>命令检查以下几项：</p>
+<blockquote>
+<p>1.是否能够<code>ping</code>通<code>baidu.com</code>；</p>
+</blockquote>
+<blockquote>
+<p>2.是否能够<code>ping</code>通宿主机；</p>
+</blockquote>
+<blockquote>
+<p>3.是否能够<code>ping</code>通子网内其他节点；</p>
+</blockquote>
+</li>
+<li><p>检查时区</p>
+<p> 时区不正确的可以通过下面的命令来修正：</p>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo tzselect</span><br></pre></td></tr></table></figure>
+
+<p>   根据系统提示进行选择即可；</p>
+<ul>
+<li><p>配置ubuntu系统国内源</p>
+<p> 因为我们需要在<code>ubuntu 22.04</code>系统上安装<code>k8s</code>，为了避免遭遇科学上网的问题，我们需要配置一下国内的源；</p>
+<ul>
+<li>备份默认源：</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo cp /etc/apt/sources.list /etc/apt/sources.list.bak</span><br><span class="line">sudo rm -rf /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>配置国内源：</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo vi /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
+
+<pre><code>  内容如下：
+</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">deb http://mirrors.aliyun.com/ubuntu/ jammy main restricted universe multiverse</span><br><span class="line">deb-src http://mirrors.aliyun.com/ubuntu/ jammy main restricted universe multiverse</span><br><span class="line">deb http://mirrors.aliyun.com/ubuntu/ jammy-security main restricted universe multiverse</span><br><span class="line">deb-src http://mirrors.aliyun.com/ubuntu/ jammy-security main restricted universe multiverse</span><br><span class="line">deb http://mirrors.aliyun.com/ubuntu/ jammy-updates main restricted universe multiverse</span><br><span class="line">deb-src http://mirrors.aliyun.com/ubuntu/ jammy-updates main restricted universe multiverse</span><br><span class="line">deb http://mirrors.aliyun.com/ubuntu/ jammy-proposed main restricted universe multiverse</span><br><span class="line">deb-src http://mirrors.aliyun.com/ubuntu/ jammy-proposed main restricted universe multiverse</span><br><span class="line">deb http://mirrors.aliyun.com/ubuntu/ jammy-backports main restricted universe multiverse</span><br><span class="line">deb-src http://mirrors.aliyun.com/ubuntu/ jammy-backports main restricted universe multiverse</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>更新</p>
+<p> 修改完毕后，需要执行以下命令生效</p>
+</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt<span class="operator">-</span><span class="keyword">get</span> <span class="keyword">update</span></span><br><span class="line">sudo apt<span class="operator">-</span><span class="keyword">get</span> upgrade</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p><strong>禁用</strong> selinux</p>
+<p> 默认ubuntu下没有这个模块，centos下需要禁用selinux；</p>
+</li>
+<li><p>禁用swap</p>
+<p> 临时禁用命令：</p>
+</li>
+</ul>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo swapoff -<span class="selector-tag">a</span></span><br></pre></td></tr></table></figure>
+
+<p>   永久禁用：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo vi /etc/fstab</span><br></pre></td></tr></table></figure>
+
+<p>   将最后一行注释后重启系统即生效：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">/swap.img      none    swap    sw      0       0</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>修改内核参数：</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">sudo tee /etc/modules-load.d/containerd.conf &lt;&lt;EOF</span><br><span class="line">overlay</span><br><span class="line">br_netfilter</span><br><span class="line">EOF</span><br><span class="line">sudo modprobe overlay</span><br><span class="line">sudo modprobe br_netfilter</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sudo tee /etc/sysctl.d/kubernetes.conf &lt;&lt;EOF</span><br><span class="line">net.bridge.bridge-nf-call-ip6tables = 1</span><br><span class="line">net.bridge.bridge-nf-call-iptables = 1</span><br><span class="line">net.ipv4.ip_forward = 1</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+
+<p>   运行以下命令使得上述配置生效：</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo sysctl <span class="attr">--system</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="修改containerd配置"><a href="#修改containerd配置" class="headerlink" title="修改containerd配置"></a>修改containerd配置</h1><p>修改这个配置是关键，否则会因为科学上网的问题导致k8s安装出错；比如后续<code>kubeadm init</code>失败，<code>kubeadm join</code>后节点状态一直处于<code>NotReady</code>状态等问题；</p>
+<ul>
+<li>备份默认配置</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo mv /etc/containerd/config.toml /etc/containerd/config.toml.bak</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>修改配置</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo vi /etc/containerd/config.toml</span><br></pre></td></tr></table></figure>
+
+<p>   配置内容如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br></pre></td><td class="code"><pre><span class="line">disabled_plugins = []</span><br><span class="line">imports = []</span><br><span class="line">oom_score = 0</span><br><span class="line">plugin_dir = &quot;&quot;</span><br><span class="line">required_plugins = []</span><br><span class="line">root = &quot;/var/lib/containerd&quot;</span><br><span class="line">state = &quot;/run/containerd&quot;</span><br><span class="line">temp = &quot;&quot;</span><br><span class="line">version = 2</span><br><span class="line"></span><br><span class="line">[cgroup]</span><br><span class="line">  path = &quot;&quot;</span><br><span class="line"></span><br><span class="line">[debug]</span><br><span class="line">  address = &quot;&quot;</span><br><span class="line">  format = &quot;&quot;</span><br><span class="line">  gid = 0</span><br><span class="line">  level = &quot;&quot;</span><br><span class="line">  uid = 0</span><br><span class="line"></span><br><span class="line">[grpc]</span><br><span class="line">  address = &quot;/run/containerd/containerd.sock&quot;</span><br><span class="line">  gid = 0</span><br><span class="line">  max_recv_message_size = 16777216</span><br><span class="line">  max_send_message_size = 16777216</span><br><span class="line">  tcp_address = &quot;&quot;</span><br><span class="line">  tcp_tls_ca = &quot;&quot;</span><br><span class="line">  tcp_tls_cert = &quot;&quot;</span><br><span class="line">  tcp_tls_key = &quot;&quot;</span><br><span class="line">  uid = 0</span><br><span class="line"></span><br><span class="line">[metrics]</span><br><span class="line">  address = &quot;&quot;</span><br><span class="line">  grpc_histogram = false</span><br><span class="line"></span><br><span class="line">[plugins]</span><br><span class="line"></span><br><span class="line">  [plugins.&quot;io.containerd.gc.v1.scheduler&quot;]</span><br><span class="line">    deletion_threshold = 0</span><br><span class="line">    mutation_threshold = 100</span><br><span class="line">    pause_threshold = 0.02</span><br><span class="line">    schedule_delay = &quot;0s&quot;</span><br><span class="line">    startup_delay = &quot;100ms&quot;</span><br><span class="line"></span><br><span class="line">  [plugins.&quot;io.containerd.grpc.v1.cri&quot;]</span><br><span class="line">    device_ownership_from_security_context = false</span><br><span class="line">    disable_apparmor = false</span><br><span class="line">    disable_cgroup = false</span><br><span class="line">    disable_hugetlb_controller = true</span><br><span class="line">    disable_proc_mount = false</span><br><span class="line">    disable_tcp_service = true</span><br><span class="line">    enable_selinux = false</span><br><span class="line">    enable_tls_streaming = false</span><br><span class="line">    enable_unprivileged_icmp = false</span><br><span class="line">    enable_unprivileged_ports = false</span><br><span class="line">    ignore_image_defined_volumes = false</span><br><span class="line">    max_concurrent_downloads = 3</span><br><span class="line">    max_container_log_line_size = 16384</span><br><span class="line">    netns_mounts_under_state_dir = false</span><br><span class="line">    restrict_oom_score_adj = false</span><br><span class="line">    sandbox_image = &quot;registry.aliyuncs.com/google_containers/pause:3.9&quot;</span><br><span class="line">    selinux_category_range = 1024</span><br><span class="line">    stats_collect_period = 10</span><br><span class="line">    stream_idle_timeout = &quot;4h0m0s&quot;</span><br><span class="line">    stream_server_address = &quot;127.0.0.1&quot;</span><br><span class="line">    stream_server_port = &quot;0&quot;</span><br><span class="line">    systemd_cgroup = false</span><br><span class="line">    tolerate_missing_hugetlb_controller = true</span><br><span class="line">    unset_seccomp_profile = &quot;&quot;</span><br><span class="line"></span><br><span class="line">    [plugins.&quot;io.containerd.grpc.v1.cri&quot;.cni]</span><br><span class="line">      bin_dir = &quot;/opt/cni/bin&quot;</span><br><span class="line">      conf_dir = &quot;/etc/cni/net.d&quot;</span><br><span class="line">      conf_template = &quot;&quot;</span><br><span class="line">      ip_pref = &quot;&quot;</span><br><span class="line">      max_conf_num = 1</span><br><span class="line"></span><br><span class="line">    [plugins.&quot;io.containerd.grpc.v1.cri&quot;.containerd]</span><br><span class="line">      default_runtime_name = &quot;runc&quot;</span><br><span class="line">      disable_snapshot_annotations = true</span><br><span class="line">      discard_unpacked_layers = false</span><br><span class="line">      ignore_rdt_not_enabled_errors = false</span><br><span class="line">      no_pivot = false</span><br><span class="line">      snapshotter = &quot;overlayfs&quot;</span><br><span class="line"></span><br><span class="line">      [plugins.&quot;io.containerd.grpc.v1.cri&quot;.containerd.default_runtime]</span><br><span class="line">        base_runtime_spec = &quot;&quot;</span><br><span class="line">        cni_conf_dir = &quot;&quot;</span><br><span class="line">        cni_max_conf_num = 0</span><br><span class="line">        container_annotations = []</span><br><span class="line">        pod_annotations = []</span><br><span class="line">        privileged_without_host_devices = false</span><br><span class="line">        runtime_engine = &quot;&quot;</span><br><span class="line">        runtime_path = &quot;&quot;</span><br><span class="line">        runtime_root = &quot;&quot;</span><br><span class="line">        runtime_type = &quot;&quot;</span><br><span class="line"></span><br><span class="line">        [plugins.&quot;io.containerd.grpc.v1.cri&quot;.containerd.default_runtime.options]</span><br><span class="line"></span><br><span class="line">      [plugins.&quot;io.containerd.grpc.v1.cri&quot;.containerd.runtimes]</span><br><span class="line"></span><br><span class="line">        [plugins.&quot;io.containerd.grpc.v1.cri&quot;.containerd.runtimes.runc]</span><br><span class="line">          base_runtime_spec = &quot;&quot;</span><br><span class="line">          cni_conf_dir = &quot;&quot;</span><br><span class="line">          cni_max_conf_num = 0</span><br><span class="line">          container_annotations = []</span><br><span class="line">          pod_annotations = []</span><br><span class="line">          privileged_without_host_devices = false</span><br><span class="line">          runtime_engine = &quot;&quot;</span><br><span class="line">          runtime_path = &quot;&quot;</span><br><span class="line">          runtime_root = &quot;&quot;</span><br><span class="line">          runtime_type = &quot;io.containerd.runc.v2&quot;</span><br><span class="line"></span><br><span class="line">          [plugins.&quot;io.containerd.grpc.v1.cri&quot;.containerd.runtimes.runc.options]</span><br><span class="line">            BinaryName = &quot;&quot;</span><br><span class="line">            CriuImagePath = &quot;&quot;</span><br><span class="line">            CriuPath = &quot;&quot;</span><br><span class="line">            CriuWorkPath = &quot;&quot;</span><br><span class="line">            IoGid = 0</span><br><span class="line">            IoUid = 0</span><br><span class="line">            NoNewKeyring = false</span><br><span class="line">            NoPivotRoot = false</span><br><span class="line">            Root = &quot;&quot;</span><br><span class="line">            ShimCgroup = &quot;&quot;</span><br><span class="line">            SystemdCgroup = true</span><br><span class="line"></span><br><span class="line">      [plugins.&quot;io.containerd.grpc.v1.cri&quot;.containerd.untrusted_workload_runtime]</span><br><span class="line">        base_runtime_spec = &quot;&quot;</span><br><span class="line">        cni_conf_dir = &quot;&quot;</span><br><span class="line">        cni_max_conf_num = 0</span><br><span class="line">        container_annotations = []</span><br><span class="line">        pod_annotations = []</span><br><span class="line">        privileged_without_host_devices = false</span><br><span class="line">        runtime_engine = &quot;&quot;</span><br><span class="line">        runtime_path = &quot;&quot;</span><br><span class="line">        runtime_root = &quot;&quot;</span><br><span class="line">        runtime_type = &quot;&quot;</span><br><span class="line"></span><br><span class="line">        [plugins.&quot;io.containerd.grpc.v1.cri&quot;.containerd.untrusted_workload_runtime.options]</span><br><span class="line"></span><br><span class="line">    [plugins.&quot;io.containerd.grpc.v1.cri&quot;.image_decryption]</span><br><span class="line">      key_model = &quot;node&quot;</span><br><span class="line"></span><br><span class="line">    [plugins.&quot;io.containerd.grpc.v1.cri&quot;.registry]</span><br><span class="line">      config_path = &quot;&quot;</span><br><span class="line"></span><br><span class="line">      [plugins.&quot;io.containerd.grpc.v1.cri&quot;.registry.auths]</span><br><span class="line"></span><br><span class="line">      [plugins.&quot;io.containerd.grpc.v1.cri&quot;.registry.configs]</span><br><span class="line"></span><br><span class="line">      [plugins.&quot;io.containerd.grpc.v1.cri&quot;.registry.headers]</span><br><span class="line"></span><br><span class="line">      [plugins.&quot;io.containerd.grpc.v1.cri&quot;.registry.mirrors]</span><br><span class="line"></span><br><span class="line">    [plugins.&quot;io.containerd.grpc.v1.cri&quot;.x509_key_pair_streaming]</span><br><span class="line">      tls_cert_file = &quot;&quot;</span><br><span class="line">      tls_key_file = &quot;&quot;</span><br><span class="line"></span><br><span class="line">  [plugins.&quot;io.containerd.internal.v1.opt&quot;]</span><br><span class="line">    path = &quot;/opt/containerd&quot;</span><br><span class="line"></span><br><span class="line">  [plugins.&quot;io.containerd.internal.v1.restart&quot;]</span><br><span class="line">    interval = &quot;10s&quot;</span><br><span class="line"></span><br><span class="line">  [plugins.&quot;io.containerd.internal.v1.tracing&quot;]</span><br><span class="line">    sampling_ratio = 1.0</span><br><span class="line">    service_name = &quot;containerd&quot;</span><br><span class="line"></span><br><span class="line">  [plugins.&quot;io.containerd.metadata.v1.bolt&quot;]</span><br><span class="line">    content_sharing_policy = &quot;shared&quot;</span><br><span class="line"></span><br><span class="line">  [plugins.&quot;io.containerd.monitor.v1.cgroups&quot;]</span><br><span class="line">    no_prometheus = false</span><br><span class="line"></span><br><span class="line">  [plugins.&quot;io.containerd.runtime.v1.linux&quot;]</span><br><span class="line">    no_shim = false</span><br><span class="line">    runtime = &quot;runc&quot;</span><br><span class="line">    runtime_root = &quot;&quot;</span><br><span class="line">    shim = &quot;containerd-shim&quot;</span><br><span class="line">    shim_debug = false</span><br><span class="line"></span><br><span class="line">  [plugins.&quot;io.containerd.runtime.v2.task&quot;]</span><br><span class="line">    platforms = [&quot;linux/amd64&quot;]</span><br><span class="line">    sched_core = false</span><br><span class="line"></span><br><span class="line">  [plugins.&quot;io.containerd.service.v1.diff-service&quot;]</span><br><span class="line">    default = [&quot;walking&quot;]</span><br><span class="line"></span><br><span class="line">  [plugins.&quot;io.containerd.service.v1.tasks-service&quot;]</span><br><span class="line">    rdt_config_file = &quot;&quot;</span><br><span class="line"></span><br><span class="line">  [plugins.&quot;io.containerd.snapshotter.v1.aufs&quot;]</span><br><span class="line">    root_path = &quot;&quot;</span><br><span class="line"></span><br><span class="line">  [plugins.&quot;io.containerd.snapshotter.v1.btrfs&quot;]</span><br><span class="line">    root_path = &quot;&quot;</span><br><span class="line"></span><br><span class="line">  [plugins.&quot;io.containerd.snapshotter.v1.devmapper&quot;]</span><br><span class="line">    async_remove = false</span><br><span class="line">    base_image_size = &quot;&quot;</span><br><span class="line">    discard_blocks = false</span><br><span class="line">    fs_options = &quot;&quot;</span><br><span class="line">    fs_type = &quot;&quot;</span><br><span class="line">    pool_name = &quot;&quot;</span><br><span class="line">    root_path = &quot;&quot;</span><br><span class="line"></span><br><span class="line">  [plugins.&quot;io.containerd.snapshotter.v1.native&quot;]</span><br><span class="line">    root_path = &quot;&quot;</span><br><span class="line"></span><br><span class="line">  [plugins.&quot;io.containerd.snapshotter.v1.overlayfs&quot;]</span><br><span class="line">    root_path = &quot;&quot;</span><br><span class="line">    upperdir_label = false</span><br><span class="line"></span><br><span class="line">  [plugins.&quot;io.containerd.snapshotter.v1.zfs&quot;]</span><br><span class="line">    root_path = &quot;&quot;</span><br><span class="line"></span><br><span class="line">  [plugins.&quot;io.containerd.tracing.processor.v1.otlp&quot;]</span><br><span class="line">    endpoint = &quot;&quot;</span><br><span class="line">    insecure = false</span><br><span class="line">    protocol = &quot;&quot;</span><br><span class="line"></span><br><span class="line">[proxy_plugins]</span><br><span class="line"></span><br><span class="line">[stream_processors]</span><br><span class="line"></span><br><span class="line">  [stream_processors.&quot;io.containerd.ocicrypt.decoder.v1.tar&quot;]</span><br><span class="line">    accepts = [&quot;application/vnd.oci.image.layer.v1.tar+encrypted&quot;]</span><br><span class="line">    args = [&quot;--decryption-keys-path&quot;, &quot;/etc/containerd/ocicrypt/keys&quot;]</span><br><span class="line">    env = [&quot;OCICRYPT_KEYPROVIDER_CONFIG=/etc/containerd/ocicrypt/ocicrypt_keyprovider.conf&quot;]</span><br><span class="line">    path = &quot;ctd-decoder&quot;</span><br><span class="line">    returns = &quot;application/vnd.oci.image.layer.v1.tar&quot;</span><br><span class="line"></span><br><span class="line">  [stream_processors.&quot;io.containerd.ocicrypt.decoder.v1.tar.gzip&quot;]</span><br><span class="line">    accepts = [&quot;application/vnd.oci.image.layer.v1.tar+gzip+encrypted&quot;]</span><br><span class="line">    args = [&quot;--decryption-keys-path&quot;, &quot;/etc/containerd/ocicrypt/keys&quot;]</span><br><span class="line">    env = [&quot;OCICRYPT_KEYPROVIDER_CONFIG=/etc/containerd/ocicrypt/ocicrypt_keyprovider.conf&quot;]</span><br><span class="line">    path = &quot;ctd-decoder&quot;</span><br><span class="line">    returns = &quot;application/vnd.oci.image.layer.v1.tar+gzip&quot;</span><br><span class="line"></span><br><span class="line">[timeouts]</span><br><span class="line">  &quot;io.containerd.timeout.bolt.open&quot; = &quot;0s&quot;</span><br><span class="line">  &quot;io.containerd.timeout.shim.cleanup&quot; = &quot;5s&quot;</span><br><span class="line">  &quot;io.containerd.timeout.shim.load&quot; = &quot;5s&quot;</span><br><span class="line">  &quot;io.containerd.timeout.shim.shutdown&quot; = &quot;3s&quot;</span><br><span class="line">  &quot;io.containerd.timeout.task.state&quot; = &quot;2s&quot;</span><br><span class="line"></span><br><span class="line">[ttrpc]</span><br><span class="line">  address = &quot;&quot;</span><br><span class="line">  gid = 0</span><br><span class="line">  uid = 0</span><br><span class="line"> ​</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>重启containerd服务</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo systemctl enable containerd</span><br><span class="line">sudo systemctl daemon-reload &amp;&amp; systemctl restart containerd</span><br></pre></td></tr></table></figure>
+
+<h2 id="安装k8s组件"><a href="#安装k8s组件" class="headerlink" title="安装k8s组件"></a>安装k8s组件</h2><ul>
+<li>添加k8s的阿里云yum源</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">curl -s https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | sudo apt-key add -</span><br><span class="line"> ​</span><br><span class="line">sudo apt-add-repository &quot;deb https://mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main&quot;</span><br><span class="line"> ​</span><br><span class="line">sudo apt-get update</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>安装k8s组件</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install -y kubelet kubeadm kubectl</span><br><span class="line">sudo apt-mark hold kubelet kubeadm kubectl</span><br></pre></td></tr></table></figure>
+
+<p>   可以通过<code>apt-cache madison kubelet</code>命令查看kubelet组件的版本；其他组件查看也是一样的命令，把对应位置的组件名称替换即可；</p>
+<h2 id="初始化master"><a href="#初始化master" class="headerlink" title="初始化master"></a>初始化master</h2><ul>
+<li>生成kubeadm默认配置文件</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo kubeadm config print init-defaults &gt; kubeadm.yaml</span><br></pre></td></tr></table></figure>
+
+<p>   修改默认配置</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo vi kubeadm.yaml</span><br></pre></td></tr></table></figure>
+
+<p>   总共做了四处修改：</p>
+<blockquote>
+<p>1.修改localAPIEndpoint.advertiseAddress为master的ip；</p>
+</blockquote>
+<blockquote>
+<p>2.修改nodeRegistration.name为当前节点名称；</p>
+</blockquote>
+<blockquote>
+<p>3.修改imageRepository为国内源：<a href="http://registry.cn-hangzhou.aliyuncs.com/google_containers">registry.cn-hangzhou.aliyuncs.com&#x2F;google_containers</a></p>
+</blockquote>
+<blockquote>
+<p>4.添加networking.podSubnet，该网络ip范围不能与networking.serviceSubnet冲突，也不能与节点网络192.168.1.0&#x2F;24相冲突；所以我就设置成10.10.0.0&#x2F;16；<br>修改后的内容如下：</p>
+</blockquote>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">kubeadm.k8s.io/v1beta3</span></span><br><span class="line"><span class="attr">bootstrapTokens:</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">groups:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">system:bootstrappers:kubeadm:default-node-token</span></span><br><span class="line">  <span class="attr">token:</span> <span class="string">abcdef.0123456789abcdef</span></span><br><span class="line">  <span class="attr">ttl:</span> <span class="string">24h0m0s</span></span><br><span class="line">  <span class="attr">usages:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">signing</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">authentication</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">InitConfiguration</span></span><br><span class="line"><span class="attr">localAPIEndpoint:</span></span><br><span class="line">  <span class="attr">advertiseAddress:</span> <span class="number">192.168</span><span class="number">.1</span><span class="number">.6</span></span><br><span class="line">  <span class="attr">bindPort:</span> <span class="number">6443</span></span><br><span class="line"><span class="attr">nodeRegistration:</span></span><br><span class="line">  <span class="attr">criSocket:</span> <span class="string">unix:///var/run/containerd/containerd.sock</span></span><br><span class="line">  <span class="attr">imagePullPolicy:</span> <span class="string">IfNotPresent</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">k8s-master</span></span><br><span class="line">  <span class="attr">taints:</span> <span class="literal">null</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiServer:</span></span><br><span class="line">  <span class="attr">timeoutForControlPlane:</span> <span class="string">4m0s</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">kubeadm.k8s.io/v1beta3</span></span><br><span class="line"><span class="attr">certificatesDir:</span> <span class="string">/etc/kubernetes/pki</span></span><br><span class="line"><span class="attr">clusterName:</span> <span class="string">mycluster</span></span><br><span class="line"><span class="attr">controllerManager:</span> &#123;&#125;</span><br><span class="line"><span class="attr">dns:</span> &#123;&#125;</span><br><span class="line"><span class="attr">etcd:</span></span><br><span class="line">  <span class="attr">local:</span></span><br><span class="line">    <span class="attr">dataDir:</span> <span class="string">/var/lib/etcd</span></span><br><span class="line"><span class="attr">imageRepository:</span> <span class="string">registry.cn-hangzhou.aliyuncs.com/google_containers</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ClusterConfiguration</span></span><br><span class="line"><span class="attr">kubernetesVersion:</span> <span class="number">1.26</span><span class="number">.0</span></span><br><span class="line"><span class="attr">networking:</span></span><br><span class="line">  <span class="attr">dnsDomain:</span> <span class="string">cluster.local</span></span><br><span class="line">  <span class="attr">serviceSubnet:</span> <span class="number">10.0</span><span class="number">.0</span><span class="number">.0</span><span class="string">/16</span></span><br><span class="line">  <span class="attr">podSubnet:</span> <span class="number">10.10</span><span class="number">.0</span><span class="number">.0</span><span class="string">/16</span></span><br><span class="line"><span class="attr">scheduler:</span> &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>执行初始化操作</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo kubeadm init —config kubeadm.yaml</span><br></pre></td></tr></table></figure>
+
+<p>   如果在执行init操作中有任何错误，可以使用<code>journalctl -u kubelet</code>查看到的错误日志；失败后我们可以通过下面的命令重置，否则再次init会存在端口冲突的问题：</p>
+<figure class="highlight perl"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo kubeadm <span class="keyword">reset</span></span><br></pre></td></tr></table></figure>
+
+<p>   初始化成功后，按照提示执行下面命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p $HOME/.kube</span><br><span class="line">sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config</span><br><span class="line">sudo chown $(id -u):$(id -g) $HOME/.kube/config</span><br><span class="line">echo &quot;KUBECONFIG=$HOME/.kube/config&quot; &gt;&gt; ~/.bashrc</span><br></pre></td></tr></table></figure>
+
+<p>   再切换到<code>root</code>用户执行下面命令：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="variable constant_">KUBECONFIG</span>=<span class="regexp">/etc/</span>kubernetes/admin.<span class="property">conf</span></span><br></pre></td></tr></table></figure>
+
+<p>   先不要着急<code>kubeadm join</code>其他节点进来，可以切换<code>root</code>用户执行以下命令就能看到节点列表：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl get nodes</span><br></pre></td></tr></table></figure>
+
+<p>   但是此时的节点状态还是<code>NotReady</code>状态，我们接下来需要安装网络插件；</p>
+<h2 id="给master安装calico网络插件"><a href="#给master安装calico网络插件" class="headerlink" title="给master安装calico网络插件"></a>给master安装calico网络插件</h2><ul>
+<li>下载kube-flannel.yml配置</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml -O</span><br></pre></td></tr></table></figure>
+
+<p>   修改kube-flannel.yml配置</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#将&quot;Network&quot;: &quot;10.10.0.0/16&quot;,修改为你podnetwork的网段，本文为10.10.0.0/16</span></span><br></pre></td></tr></table></figure>
+
+<p>   安装kube-flannel.yml插件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl apply -f kube-flannel.yml</span><br></pre></td></tr></table></figure>
+
+<p>   卸载该插件可以使用下面命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl delete -f kube-flannel.yml</span><br></pre></td></tr></table></figure>
+
+<p>flannel网络插件安装成功后，master节点的状态将逐渐转变成<code>Ready</code>状态；如果状态一直是<code>NotReady</code>，建议重启一下master节点；</p>
+<h2 id="接入两个工作节点"><a href="#接入两个工作节点" class="headerlink" title="接入两个工作节点"></a>接入两个工作节点</h2><p>我们在master节点init成功后，会提示可以通过<code>kubeadm join</code>命令把工作节点加入进来。我们在master节点安装好calico网络插件后，就可以分别在两个工作节点中执行<code>kubeadm join</code>命令了：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubeadm <span class="keyword">join</span> <span class="number">192.168</span><span class="number">.1</span><span class="number">.6</span>:<span class="number">6443</span> <span class="comment">--token ui3x3h.n3op589vk67med1t --discovery-token-ca-cert-hash sha256:ecd2d64f701233c28f78ce3406b0f8beb75acc4bbf7cebc25d862196e95a486f</span></span><br></pre></td></tr></table></figure>
+
+<p>如果我们忘记了master中生成的命令，我们依然可以通过以下命令让master节点重新生成一下<code>kubeadm join</code>命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo kubeadm token create --print-join-command</span><br></pre></td></tr></table></figure>
+
+<p>我们在工作节点执行完<code>kubeadm join</code>命令后，需要回到master节点执行以下命令检查工作节点是否逐渐转变为<code>Ready</code>状态：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl get nodes</span><br></pre></td></tr></table></figure>
+
+<p>如果工作节点长时间处于<code>NotReady</code>状态，我们需要查看<code>pods</code>状态：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo kubectl <span class="keyword">get</span> pods <span class="operator">-</span>n kube<span class="operator">-</span><span class="keyword">system</span></span><br></pre></td></tr></table></figure>
+
+<p>查看目标<code>pod</code>的日志可以使用下面命令：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl <span class="keyword">describe</span> pod <span class="operator">-</span>n kube<span class="operator">-</span><span class="keyword">system</span> [pod<span class="operator">-</span>name]</span><br></pre></td></tr></table></figure>
+
+<p>当所有工作节点都转变成<code>Ready</code>状态后，我们就可以安装Dashboard了；</p>
+<h2 id="安装Dashboard"><a href="#安装Dashboard" class="headerlink" title="安装Dashboard"></a>安装Dashboard</h2><ul>
+<li><p>准备配置文件</p>
+<p> 可以科学上网的小伙伴可以按照github上的文档来：<a href="https://link.juejin.cn/?target=https://github.com/kubernetes/dashboard/tree/v2.7.0">github.com&#x2F;kubernetes&#x2F;…</a>，我选择的是2.7.0版本；</p>
+<p> 不能科学上网的小伙伴就按照下面步骤来，在master节点操作：</p>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo vi recommended.yaml</span><br></pre></td></tr></table></figure>
+
+<p>   文件内容如下：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br><span class="line">305</span><br><span class="line">306</span><br><span class="line">307</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Copyright 2017 The Kubernetes Authors.</span></span><br><span class="line"> <span class="comment">#</span></span><br><span class="line"> <span class="comment"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span></span><br><span class="line"> <span class="comment"># you may not use this file except in compliance with the License.</span></span><br><span class="line"> <span class="comment"># You may obtain a copy of the License at</span></span><br><span class="line"> <span class="comment">#</span></span><br><span class="line"> <span class="comment">#     http://www.apache.org/licenses/LICENSE-2.0</span></span><br><span class="line"> <span class="comment">#</span></span><br><span class="line"> <span class="comment"># Unless required by applicable law or agreed to in writing, software</span></span><br><span class="line"> <span class="comment"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span></span><br><span class="line"> <span class="comment"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span></span><br><span class="line"> <span class="comment"># See the License for the specific language governing permissions and</span></span><br><span class="line"> <span class="comment"># limitations under the License.</span></span><br><span class="line"> <span class="string">​</span></span><br><span class="line"> <span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"> <span class="attr">kind:</span> <span class="string">Namespace</span></span><br><span class="line"> <span class="attr">metadata:</span></span><br><span class="line">   <span class="attr">name:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line"> <span class="string">​</span></span><br><span class="line"> <span class="string">---</span></span><br><span class="line"> <span class="string">​</span></span><br><span class="line"> <span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"> <span class="attr">kind:</span> <span class="string">ServiceAccount</span></span><br><span class="line"> <span class="attr">metadata:</span></span><br><span class="line">   <span class="attr">labels:</span></span><br><span class="line">     <span class="attr">k8s-app:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line">   <span class="attr">name:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line">   <span class="attr">namespace:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line"> <span class="string">​</span></span><br><span class="line"> <span class="string">---</span></span><br><span class="line"> <span class="string">​</span></span><br><span class="line"> <span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"> <span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"> <span class="attr">metadata:</span></span><br><span class="line">   <span class="attr">labels:</span></span><br><span class="line">     <span class="attr">k8s-app:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line">   <span class="attr">name:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line">   <span class="attr">namespace:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line"> <span class="attr">spec:</span></span><br><span class="line">   <span class="attr">type:</span> <span class="string">NodePort</span></span><br><span class="line">   <span class="attr">ports:</span></span><br><span class="line">     <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">443</span></span><br><span class="line">       <span class="attr">targetPort:</span> <span class="number">8443</span></span><br><span class="line">   <span class="attr">selector:</span></span><br><span class="line">     <span class="attr">k8s-app:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line"> <span class="string">​</span></span><br><span class="line"> <span class="string">---</span></span><br><span class="line"> <span class="string">​</span></span><br><span class="line"> <span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"> <span class="attr">kind:</span> <span class="string">Secret</span></span><br><span class="line"> <span class="attr">metadata:</span></span><br><span class="line">   <span class="attr">labels:</span></span><br><span class="line">     <span class="attr">k8s-app:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line">   <span class="attr">name:</span> <span class="string">kubernetes-dashboard-certs</span></span><br><span class="line">   <span class="attr">namespace:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line"> <span class="attr">type:</span> <span class="string">Opaque</span></span><br><span class="line"> <span class="string">​</span></span><br><span class="line"> <span class="string">---</span></span><br><span class="line"> <span class="string">​</span></span><br><span class="line"> <span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"> <span class="attr">kind:</span> <span class="string">Secret</span></span><br><span class="line"> <span class="attr">metadata:</span></span><br><span class="line">   <span class="attr">labels:</span></span><br><span class="line">     <span class="attr">k8s-app:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line">   <span class="attr">name:</span> <span class="string">kubernetes-dashboard-csrf</span></span><br><span class="line">   <span class="attr">namespace:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line"> <span class="attr">type:</span> <span class="string">Opaque</span></span><br><span class="line"> <span class="attr">data:</span></span><br><span class="line">   <span class="attr">csrf:</span> <span class="string">&quot;&quot;</span></span><br><span class="line"> <span class="string">​</span></span><br><span class="line"> <span class="string">---</span></span><br><span class="line"> <span class="string">​</span></span><br><span class="line"> <span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"> <span class="attr">kind:</span> <span class="string">Secret</span></span><br><span class="line"> <span class="attr">metadata:</span></span><br><span class="line">   <span class="attr">labels:</span></span><br><span class="line">     <span class="attr">k8s-app:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line">   <span class="attr">name:</span> <span class="string">kubernetes-dashboard-key-holder</span></span><br><span class="line">   <span class="attr">namespace:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line"> <span class="attr">type:</span> <span class="string">Opaque</span></span><br><span class="line"> <span class="string">​</span></span><br><span class="line"> <span class="string">---</span></span><br><span class="line"> <span class="string">​</span></span><br><span class="line"> <span class="attr">kind:</span> <span class="string">ConfigMap</span></span><br><span class="line"> <span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"> <span class="attr">metadata:</span></span><br><span class="line">   <span class="attr">labels:</span></span><br><span class="line">     <span class="attr">k8s-app:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line">   <span class="attr">name:</span> <span class="string">kubernetes-dashboard-settings</span></span><br><span class="line">   <span class="attr">namespace:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line"> <span class="string">​</span></span><br><span class="line"> <span class="string">---</span></span><br><span class="line"> <span class="string">​</span></span><br><span class="line"> <span class="attr">kind:</span> <span class="string">Role</span></span><br><span class="line"> <span class="attr">apiVersion:</span> <span class="string">rbac.authorization.k8s.io/v1</span></span><br><span class="line"> <span class="attr">metadata:</span></span><br><span class="line">   <span class="attr">labels:</span></span><br><span class="line">     <span class="attr">k8s-app:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line">   <span class="attr">name:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line">   <span class="attr">namespace:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line"> <span class="attr">rules:</span></span><br><span class="line">   <span class="comment"># Allow Dashboard to get, update and delete Dashboard exclusive secrets.</span></span><br><span class="line">   <span class="bullet">-</span> <span class="attr">apiGroups:</span> [<span class="string">&quot;&quot;</span>]</span><br><span class="line">     <span class="attr">resources:</span> [<span class="string">&quot;secrets&quot;</span>]</span><br><span class="line">     <span class="attr">resourceNames:</span> [<span class="string">&quot;kubernetes-dashboard-key-holder&quot;</span>, <span class="string">&quot;kubernetes-dashboard-certs&quot;</span>, <span class="string">&quot;kubernetes-dashboard-csrf&quot;</span>]</span><br><span class="line">     <span class="attr">verbs:</span> [<span class="string">&quot;get&quot;</span>, <span class="string">&quot;update&quot;</span>, <span class="string">&quot;delete&quot;</span>]</span><br><span class="line">     <span class="comment"># Allow Dashboard to get and update &#x27;kubernetes-dashboard-settings&#x27; config map.</span></span><br><span class="line">   <span class="bullet">-</span> <span class="attr">apiGroups:</span> [<span class="string">&quot;&quot;</span>]</span><br><span class="line">     <span class="attr">resources:</span> [<span class="string">&quot;configmaps&quot;</span>]</span><br><span class="line">     <span class="attr">resourceNames:</span> [<span class="string">&quot;kubernetes-dashboard-settings&quot;</span>]</span><br><span class="line">     <span class="attr">verbs:</span> [<span class="string">&quot;get&quot;</span>, <span class="string">&quot;update&quot;</span>]</span><br><span class="line">     <span class="comment"># Allow Dashboard to get metrics.</span></span><br><span class="line">   <span class="bullet">-</span> <span class="attr">apiGroups:</span> [<span class="string">&quot;&quot;</span>]</span><br><span class="line">     <span class="attr">resources:</span> [<span class="string">&quot;services&quot;</span>]</span><br><span class="line">     <span class="attr">resourceNames:</span> [<span class="string">&quot;heapster&quot;</span>, <span class="string">&quot;dashboard-metrics-scraper&quot;</span>]</span><br><span class="line">     <span class="attr">verbs:</span> [<span class="string">&quot;proxy&quot;</span>]</span><br><span class="line">   <span class="bullet">-</span> <span class="attr">apiGroups:</span> [<span class="string">&quot;&quot;</span>]</span><br><span class="line">     <span class="attr">resources:</span> [<span class="string">&quot;services/proxy&quot;</span>]</span><br><span class="line">     <span class="attr">resourceNames:</span> [<span class="string">&quot;heapster&quot;</span>, <span class="string">&quot;http:heapster:&quot;</span>, <span class="string">&quot;https:heapster:&quot;</span>, <span class="string">&quot;dashboard-metrics-scraper&quot;</span>, <span class="string">&quot;http:dashboard-metrics-scraper&quot;</span>]</span><br><span class="line">     <span class="attr">verbs:</span> [<span class="string">&quot;get&quot;</span>]</span><br><span class="line"> <span class="string">​</span></span><br><span class="line"> <span class="string">---</span></span><br><span class="line"> <span class="string">​</span></span><br><span class="line"> <span class="attr">kind:</span> <span class="string">ClusterRole</span></span><br><span class="line"> <span class="attr">apiVersion:</span> <span class="string">rbac.authorization.k8s.io/v1</span></span><br><span class="line"> <span class="attr">metadata:</span></span><br><span class="line">   <span class="attr">labels:</span></span><br><span class="line">     <span class="attr">k8s-app:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line">   <span class="attr">name:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line"> <span class="attr">rules:</span></span><br><span class="line">   <span class="comment"># Allow Metrics Scraper to get metrics from the Metrics server</span></span><br><span class="line">   <span class="bullet">-</span> <span class="attr">apiGroups:</span> [<span class="string">&quot;metrics.k8s.io&quot;</span>]</span><br><span class="line">     <span class="attr">resources:</span> [<span class="string">&quot;pods&quot;</span>, <span class="string">&quot;nodes&quot;</span>]</span><br><span class="line">     <span class="attr">verbs:</span> [<span class="string">&quot;get&quot;</span>, <span class="string">&quot;list&quot;</span>, <span class="string">&quot;watch&quot;</span>]</span><br><span class="line"> <span class="string">​</span></span><br><span class="line"> <span class="string">---</span></span><br><span class="line"> <span class="string">​</span></span><br><span class="line"> <span class="attr">apiVersion:</span> <span class="string">rbac.authorization.k8s.io/v1</span></span><br><span class="line"> <span class="attr">kind:</span> <span class="string">RoleBinding</span></span><br><span class="line"> <span class="attr">metadata:</span></span><br><span class="line">   <span class="attr">labels:</span></span><br><span class="line">     <span class="attr">k8s-app:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line">   <span class="attr">name:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line">   <span class="attr">namespace:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line"> <span class="attr">roleRef:</span></span><br><span class="line">   <span class="attr">apiGroup:</span> <span class="string">rbac.authorization.k8s.io</span></span><br><span class="line">   <span class="attr">kind:</span> <span class="string">Role</span></span><br><span class="line">   <span class="attr">name:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line"> <span class="attr">subjects:</span></span><br><span class="line">   <span class="bullet">-</span> <span class="attr">kind:</span> <span class="string">ServiceAccount</span></span><br><span class="line">     <span class="attr">name:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line">     <span class="attr">namespace:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line"> <span class="string">​</span></span><br><span class="line"> <span class="string">---</span></span><br><span class="line"> <span class="string">​</span></span><br><span class="line"> <span class="attr">apiVersion:</span> <span class="string">rbac.authorization.k8s.io/v1</span></span><br><span class="line"> <span class="attr">kind:</span> <span class="string">ClusterRoleBinding</span></span><br><span class="line"> <span class="attr">metadata:</span></span><br><span class="line">   <span class="attr">name:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line"> <span class="attr">roleRef:</span></span><br><span class="line">   <span class="attr">apiGroup:</span> <span class="string">rbac.authorization.k8s.io</span></span><br><span class="line">   <span class="attr">kind:</span> <span class="string">ClusterRole</span></span><br><span class="line">   <span class="attr">name:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line"> <span class="attr">subjects:</span></span><br><span class="line">   <span class="bullet">-</span> <span class="attr">kind:</span> <span class="string">ServiceAccount</span></span><br><span class="line">     <span class="attr">name:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line">     <span class="attr">namespace:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line"> <span class="string">​</span></span><br><span class="line"> <span class="string">---</span></span><br><span class="line"> <span class="string">​</span></span><br><span class="line"> <span class="attr">kind:</span> <span class="string">Deployment</span></span><br><span class="line"> <span class="attr">apiVersion:</span> <span class="string">apps/v1</span></span><br><span class="line"> <span class="attr">metadata:</span></span><br><span class="line">   <span class="attr">labels:</span></span><br><span class="line">     <span class="attr">k8s-app:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line">   <span class="attr">name:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line">   <span class="attr">namespace:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line"> <span class="attr">spec:</span></span><br><span class="line">   <span class="attr">replicas:</span> <span class="number">1</span></span><br><span class="line">   <span class="attr">revisionHistoryLimit:</span> <span class="number">10</span></span><br><span class="line">   <span class="attr">selector:</span></span><br><span class="line">     <span class="attr">matchLabels:</span></span><br><span class="line">       <span class="attr">k8s-app:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line">   <span class="attr">template:</span></span><br><span class="line">     <span class="attr">metadata:</span></span><br><span class="line">       <span class="attr">labels:</span></span><br><span class="line">         <span class="attr">k8s-app:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line">     <span class="attr">spec:</span></span><br><span class="line">       <span class="attr">securityContext:</span></span><br><span class="line">         <span class="attr">seccompProfile:</span></span><br><span class="line">           <span class="attr">type:</span> <span class="string">RuntimeDefault</span></span><br><span class="line">       <span class="attr">containers:</span></span><br><span class="line">         <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line">           <span class="attr">image:</span> <span class="string">kubernetesui/dashboard:v2.6.1</span></span><br><span class="line">           <span class="attr">imagePullPolicy:</span> <span class="string">Always</span></span><br><span class="line">           <span class="attr">ports:</span></span><br><span class="line">             <span class="bullet">-</span> <span class="attr">containerPort:</span> <span class="number">8443</span></span><br><span class="line">               <span class="attr">protocol:</span> <span class="string">TCP</span></span><br><span class="line">           <span class="attr">args:</span></span><br><span class="line">             <span class="bullet">-</span> <span class="string">--auto-generate-certificates</span></span><br><span class="line">             <span class="bullet">-</span> <span class="string">--namespace=kubernetes-dashboard</span></span><br><span class="line">             <span class="comment"># Uncomment the following line to manually specify Kubernetes API server Host</span></span><br><span class="line">             <span class="comment"># If not specified, Dashboard will attempt to auto discover the API server and connect</span></span><br><span class="line">             <span class="comment"># to it. Uncomment only if the default does not work.</span></span><br><span class="line">             <span class="comment"># - --apiserver-host=http://my-address:port</span></span><br><span class="line">           <span class="attr">volumeMounts:</span></span><br><span class="line">             <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">kubernetes-dashboard-certs</span></span><br><span class="line">               <span class="attr">mountPath:</span> <span class="string">/certs</span></span><br><span class="line">               <span class="comment"># Create on-disk volume to store exec logs</span></span><br><span class="line">             <span class="bullet">-</span> <span class="attr">mountPath:</span> <span class="string">/tmp</span></span><br><span class="line">               <span class="attr">name:</span> <span class="string">tmp-volume</span></span><br><span class="line">           <span class="attr">livenessProbe:</span></span><br><span class="line">             <span class="attr">httpGet:</span></span><br><span class="line">               <span class="attr">scheme:</span> <span class="string">HTTPS</span></span><br><span class="line">               <span class="attr">path:</span> <span class="string">/</span></span><br><span class="line">               <span class="attr">port:</span> <span class="number">8443</span></span><br><span class="line">             <span class="attr">initialDelaySeconds:</span> <span class="number">30</span></span><br><span class="line">             <span class="attr">timeoutSeconds:</span> <span class="number">30</span></span><br><span class="line">           <span class="attr">securityContext:</span></span><br><span class="line">             <span class="attr">allowPrivilegeEscalation:</span> <span class="literal">false</span></span><br><span class="line">             <span class="attr">readOnlyRootFilesystem:</span> <span class="literal">true</span></span><br><span class="line">             <span class="attr">runAsUser:</span> <span class="number">1001</span></span><br><span class="line">             <span class="attr">runAsGroup:</span> <span class="number">2001</span></span><br><span class="line">       <span class="attr">volumes:</span></span><br><span class="line">         <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">kubernetes-dashboard-certs</span></span><br><span class="line">           <span class="attr">secret:</span></span><br><span class="line">             <span class="attr">secretName:</span> <span class="string">kubernetes-dashboard-certs</span></span><br><span class="line">         <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">tmp-volume</span></span><br><span class="line">           <span class="attr">emptyDir:</span> &#123;&#125;</span><br><span class="line">       <span class="attr">serviceAccountName:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line">       <span class="attr">nodeSelector:</span></span><br><span class="line">         <span class="attr">&quot;kubernetes.io/os&quot;:</span> <span class="string">linux</span></span><br><span class="line">       <span class="comment"># Comment the following tolerations if Dashboard must not be deployed on master</span></span><br><span class="line">       <span class="attr">tolerations:</span></span><br><span class="line">         <span class="bullet">-</span> <span class="attr">key:</span> <span class="string">node-role.kubernetes.io/master</span></span><br><span class="line">           <span class="attr">effect:</span> <span class="string">NoSchedule</span></span><br><span class="line"> <span class="string">​</span></span><br><span class="line"> <span class="string">---</span></span><br><span class="line"> <span class="string">​</span></span><br><span class="line"> <span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"> <span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"> <span class="attr">metadata:</span></span><br><span class="line">   <span class="attr">labels:</span></span><br><span class="line">     <span class="attr">k8s-app:</span> <span class="string">dashboard-metrics-scraper</span></span><br><span class="line">   <span class="attr">name:</span> <span class="string">dashboard-metrics-scraper</span></span><br><span class="line">   <span class="attr">namespace:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line"> <span class="attr">spec:</span></span><br><span class="line">   <span class="attr">ports:</span></span><br><span class="line">     <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">8000</span></span><br><span class="line">       <span class="attr">targetPort:</span> <span class="number">8000</span></span><br><span class="line">   <span class="attr">selector:</span></span><br><span class="line">     <span class="attr">k8s-app:</span> <span class="string">dashboard-metrics-scraper</span></span><br><span class="line"> <span class="string">​</span></span><br><span class="line"> <span class="string">---</span></span><br><span class="line"> <span class="string">​</span></span><br><span class="line"> <span class="attr">kind:</span> <span class="string">Deployment</span></span><br><span class="line"> <span class="attr">apiVersion:</span> <span class="string">apps/v1</span></span><br><span class="line"> <span class="attr">metadata:</span></span><br><span class="line">   <span class="attr">labels:</span></span><br><span class="line">     <span class="attr">k8s-app:</span> <span class="string">dashboard-metrics-scraper</span></span><br><span class="line">   <span class="attr">name:</span> <span class="string">dashboard-metrics-scraper</span></span><br><span class="line">   <span class="attr">namespace:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line"> <span class="attr">spec:</span></span><br><span class="line">   <span class="attr">replicas:</span> <span class="number">1</span></span><br><span class="line">   <span class="attr">revisionHistoryLimit:</span> <span class="number">10</span></span><br><span class="line">   <span class="attr">selector:</span></span><br><span class="line">     <span class="attr">matchLabels:</span></span><br><span class="line">       <span class="attr">k8s-app:</span> <span class="string">dashboard-metrics-scraper</span></span><br><span class="line">   <span class="attr">template:</span></span><br><span class="line">     <span class="attr">metadata:</span></span><br><span class="line">       <span class="attr">labels:</span></span><br><span class="line">         <span class="attr">k8s-app:</span> <span class="string">dashboard-metrics-scraper</span></span><br><span class="line">     <span class="attr">spec:</span></span><br><span class="line">       <span class="attr">securityContext:</span></span><br><span class="line">         <span class="attr">seccompProfile:</span></span><br><span class="line">           <span class="attr">type:</span> <span class="string">RuntimeDefault</span></span><br><span class="line">       <span class="attr">containers:</span></span><br><span class="line">         <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">dashboard-metrics-scraper</span></span><br><span class="line">           <span class="attr">image:</span> <span class="string">kubernetesui/metrics-scraper:v1.0.8</span></span><br><span class="line">           <span class="attr">ports:</span></span><br><span class="line">             <span class="bullet">-</span> <span class="attr">containerPort:</span> <span class="number">8000</span></span><br><span class="line">               <span class="attr">protocol:</span> <span class="string">TCP</span></span><br><span class="line">           <span class="attr">livenessProbe:</span></span><br><span class="line">             <span class="attr">httpGet:</span></span><br><span class="line">               <span class="attr">scheme:</span> <span class="string">HTTP</span></span><br><span class="line">               <span class="attr">path:</span> <span class="string">/</span></span><br><span class="line">               <span class="attr">port:</span> <span class="number">8000</span></span><br><span class="line">             <span class="attr">initialDelaySeconds:</span> <span class="number">30</span></span><br><span class="line">             <span class="attr">timeoutSeconds:</span> <span class="number">30</span></span><br><span class="line">           <span class="attr">volumeMounts:</span></span><br><span class="line">           <span class="bullet">-</span> <span class="attr">mountPath:</span> <span class="string">/tmp</span></span><br><span class="line">             <span class="attr">name:</span> <span class="string">tmp-volume</span></span><br><span class="line">           <span class="attr">securityContext:</span></span><br><span class="line">             <span class="attr">allowPrivilegeEscalation:</span> <span class="literal">false</span></span><br><span class="line">             <span class="attr">readOnlyRootFilesystem:</span> <span class="literal">true</span></span><br><span class="line">             <span class="attr">runAsUser:</span> <span class="number">1001</span></span><br><span class="line">             <span class="attr">runAsGroup:</span> <span class="number">2001</span></span><br><span class="line">       <span class="attr">serviceAccountName:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line">       <span class="attr">nodeSelector:</span></span><br><span class="line">         <span class="attr">&quot;kubernetes.io/os&quot;:</span> <span class="string">linux</span></span><br><span class="line">       <span class="comment"># Comment the following tolerations if Dashboard must not be deployed on master</span></span><br><span class="line">       <span class="attr">tolerations:</span></span><br><span class="line">         <span class="bullet">-</span> <span class="attr">key:</span> <span class="string">node-role.kubernetes.io/master</span></span><br><span class="line">           <span class="attr">effect:</span> <span class="string">NoSchedule</span></span><br><span class="line">       <span class="attr">volumes:</span></span><br><span class="line">         <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">tmp-volume</span></span><br><span class="line">           <span class="attr">emptyDir:</span> &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>安装</p>
+<p> 通过执行以下命令安装Dashboard：</p>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl apply -f recommended.yaml</span><br></pre></td></tr></table></figure>
+
+<p>   此时就静静等待，直到<code>kubectl get pods -A</code>命令下显示都是<code>Running</code>状态：</p>
+<blockquote>
+<p>kubernetes-dashboard dashboard-metrics-scraper-7bc864c59-tdxdd 1&#x2F;1 Running 0 5m32s</p>
+</blockquote>
+<blockquote>
+<p>kubernetes-dashboard kubernetes-dashboard-6ff574dd47-p55zl 1&#x2F;1 Running 0 5m32s</p>
+</blockquote>
+<ul>
+<li>查看端口</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl get svc -n kubernetes-dashboard</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/k8s%E9%83%A8%E7%BD%B2/Image.png" alt="Image.png"></p>
+<ul>
+<li>浏览器访问Dashboard</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">因为不能直接访问dashboard,因此使用proxy</span><br><span class="line">kubectl proxy</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/k8s%E9%83%A8%E7%BD%B2/Image_2.png" alt="Image_2.png"></p>
+<p>   使用<code>Token</code>登录</p>
+<ul>
+<li><p>生成Token</p>
+<p> 在master节点中执行下面命令创建<code>admin-user</code>：</p>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo vi dash.yaml</span><br></pre></td></tr></table></figure>
+
+<p>   配置文件内容如下：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"> <span class="attr">kind:</span> <span class="string">ServiceAccount</span></span><br><span class="line"> <span class="attr">metadata:</span></span><br><span class="line">   <span class="attr">name:</span> <span class="string">admin-user</span></span><br><span class="line">   <span class="attr">namespace:</span> <span class="string">kubernetes-dashboard</span></span><br><span class="line"> <span class="string">---</span></span><br><span class="line"> <span class="attr">apiVersion:</span> <span class="string">rbac.authorization.k8s.io/v1</span></span><br><span class="line"> <span class="attr">kind:</span> <span class="string">ClusterRoleBinding</span></span><br><span class="line"> <span class="attr">metadata:</span></span><br><span class="line">   <span class="attr">name:</span> <span class="string">admin-user</span></span><br><span class="line"> <span class="attr">roleRef:</span></span><br><span class="line">   <span class="attr">apiGroup:</span> <span class="string">rbac.authorization.k8s.io</span></span><br><span class="line">   <span class="attr">kind:</span> <span class="string">ClusterRole</span></span><br><span class="line">   <span class="attr">name:</span> <span class="string">cluster-admin</span></span><br><span class="line"> <span class="attr">subjects:</span></span><br><span class="line"> <span class="bullet">-</span> <span class="attr">kind:</span> <span class="string">ServiceAccount</span></span><br><span class="line">   <span class="attr">name:</span> <span class="string">admin-user</span></span><br><span class="line">   <span class="attr">namespace:</span> <span class="string">kubernetes-dashboard</span></span><br></pre></td></tr></table></figure>
+
+<p>   接下来我们通过下面命令创建<code>admin-user</code>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl apply -f dash.yaml</span><br></pre></td></tr></table></figure>
+
+<p>   日志如下：</p>
+<blockquote>
+<p>serviceaccount&#x2F;admin-user created</p>
+</blockquote>
+<blockquote>
+<p><a href="http://clusterrolebinding.rbac.authorization.k8s.io/admin-user">clusterrolebinding.rbac.authorization.k8s.io&#x2F;admin-user</a> created<br>这就表示<code>admin-user</code>账号创建成功，接下来我们生成该用户的<code>Token</code>：</p>
+</blockquote>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl <span class="operator">-</span>n kubernetes<span class="operator">-</span>dashboard <span class="keyword">create</span> token admin<span class="operator">-</span><span class="keyword">user</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/k8s%E9%83%A8%E7%BD%B2/cb8265989dab4ccda66c641084e96c32~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp" alt="cb8265989dab4ccda66c641084e96c32~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp"></p>
+<p>   我们把生成的<code>Token</code>拷贝好贴进浏览器对应的输入框中并点击<code>登录</code>按钮：</p>
+<p>至此，我们就在<code>ubuntu 22.04</code>上完成了<code>k8s</code>的安装。</p>
+<h4 id="备注："><a href="#备注：" class="headerlink" title="备注："></a>备注：</h4><p>参考文档里面有进行安装docker，但是我查了官方文档，k8s不需要同时安装docker跟containerd，只要一个容器运行时就行。我这边选用containerd。</p>
+<p>参考文档：</p>
+<p><a href="https://juejin.cn/post/7208910021970952252">https://juejin.cn/post/7208910021970952252</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+      <div>
+        <div id="reward-container">
+  <div></div>
+  <button id="reward-button" disable="enable" onclick="var qr = document.getElementById(&quot;qr&quot;); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+
+    
+      
+      
+        
+      
+      <div style="display: inline-block">
+        <img src="https://res.cloudinary.com/dc6pgic7p/image/upload/v1553325075/weixin.jpg" alt="teatea 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+      
+      
+        
+      
+      <div style="display: inline-block">
+        <img src="/images/zhifubao.jpg" alt="teatea 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+      <div>
+        
+
+
+
+
+  
+
+
+
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>teatea</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    
+    <a href="https://blog.iuhui.site/k8s%E9%83%A8%E7%BD%B2.html" title="k8s部署">https://blog.iuhui.site/k8s%E9%83%A8%E7%BD%B2.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/zh-CN" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/%E5%91%BD%E4%BB%A4%E8%A1%8C%E6%9F%A5%E8%AF%A2mysql%E5%A4%A7%E5%B0%8F.html" rel="next" title="命令行查询mysql大小">
+                <i class="fa fa-chevron-left"></i> 命令行查询mysql大小
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/%E5%9F%BA%E4%BA%8Exenon%E7%9A%84mysql%E5%86%99%E8%8A%82%E7%82%B9%E9%AB%98%E5%8F%AF%E7%94%A8.html" rel="prev" title="基于xenon的mysql写节点高可用">
+                基于xenon的mysql写节点高可用 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="gitalk-container">
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://res.cloudinary.com/dc6pgic7p/image/upload/v1554968110/avatar.png"
+                alt="teatea"/>
+            
+              <p class="site-author-name" itemprop="name">teatea</p>
+              <div class="site-description motion-element" itemprop="description">生命不息，折腾不止！</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/%20%7C%7C%20archive">
+                
+                    <span class="site-state-item-count">26</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/%20%7C%7C%20th">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/yubinhong" title="GitHub &rarr; https:&#x2F;&#x2F;github.com&#x2F;yubinhong" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:yubinhong1990@gmail.com" title="E-Mail &rarr; mailto:yubinhong1990@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
+          
+
+          
+             <div class="cc-license motion-element" itemprop="license">
+              
+              
+                
+              
+              
+              
+              <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/zh-CN" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"/></a>
+             </div>
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#k8s%E9%83%A8%E7%BD%B2"><span class="nav-number">1.</span> <span class="nav-text">k8s部署</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%8A%82%E7%82%B9%E9%85%8D%E7%BD%AE"><span class="nav-number">1.1.</span> <span class="nav-text">节点配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BF%AE%E6%94%B9%E7%B3%BB%E7%BB%9F%E8%AE%BE%E7%BD%AE"><span class="nav-number">1.2.</span> <span class="nav-text">修改系统设置</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BF%AE%E6%94%B9containerd%E9%85%8D%E7%BD%AE"><span class="nav-number">2.</span> <span class="nav-text">修改containerd配置</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85k8s%E7%BB%84%E4%BB%B6"><span class="nav-number">2.1.</span> <span class="nav-text">安装k8s组件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96master"><span class="nav-number">2.2.</span> <span class="nav-text">初始化master</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%99master%E5%AE%89%E8%A3%85calico%E7%BD%91%E7%BB%9C%E6%8F%92%E4%BB%B6"><span class="nav-number">2.3.</span> <span class="nav-text">给master安装calico网络插件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8E%A5%E5%85%A5%E4%B8%A4%E4%B8%AA%E5%B7%A5%E4%BD%9C%E8%8A%82%E7%82%B9"><span class="nav-number">2.4.</span> <span class="nav-text">接入两个工作节点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85Dashboard"><span class="nav-number">2.5.</span> <span class="nav-text">安装Dashboard</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A4%87%E6%B3%A8%EF%BC%9A"><span class="nav-number">2.5.1.</span> <span class="nav-text">备注：</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2026</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">teatea</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">92k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">1:24</span>
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v8.1.2</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.0.1</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+  
+
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+    
+
+<script src="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css"/>
+
+
+
+<script src="//cdn.jsdelivr.net/npm/js-md5@0.7.3/src/md5.min.js"></script>
+
+<script>
+  var gitalk = new Gitalk({
+    clientID: '2b85de6b1415eaa62bfe',
+    clientSecret: '368d0b08b22c66814738061432ee042d1e66af02',
+    repo: 'blog.teatea.ga',
+    owner: 'yubinhong',
+    admin: ['yubinhong'],
+    id: md5(location.pathname),
+    
+      language: 'zh-CN',
+    
+    distractionFreeMode: 'true'
+  });
+  gitalk.render('gitalk-container');
+</script>
+
+  
+
+
+  
+  <script>
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url).replace(/\/{2,}/g, '/');
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x"></i></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x"></i></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+        if (result) $(this).text('复制成功');
+        else $(this).text('复制失败');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+  
+
+  
+
+</body>
+</html>

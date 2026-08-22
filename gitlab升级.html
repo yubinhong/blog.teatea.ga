@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222"/>
+<meta name="google-site-verification" content="-LvJ2MYKS-LMmbiiWaR7rL6AY0kwJa6QzPsoDVP2WDg" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2"/>
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1"/>
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Pisces',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+<script data-ad-client="ca-pub-3477951175425866" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+
+  
+
+
+
+
+  <meta name="description" content="使用 GitLab 官方 Upgrade Path 工具规划升级路径，并在每个必经版本完成备份、健康检查和后台迁移。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GitLab 升级：按官方 Upgrade Path 逐版本升级">
+<meta property="og:url" content="https://blog.iuhui.site/gitlab%E5%8D%87%E7%BA%A7.html">
+<meta property="og:site_name" content="syin的博客">
+<meta property="og:description" content="使用 GitLab 官方 Upgrade Path 工具规划升级路径，并在每个必经版本完成备份、健康检查和后台迁移。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-04-08T14:35:00.000Z">
+<meta property="article:modified_time" content="2026-08-12T22:30:00.000Z">
+<meta property="article:author" content="teatea">
+<meta property="article:tag" content="GitLab">
+<meta property="article:tag" content="运维">
+<meta name="twitter:card" content="summary">
+
+
+
+
+
+
+  <link rel="canonical" href="https://blog.iuhui.site/gitlab升级.html"/>
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>GitLab 升级：按官方 Upgrade Path 逐版本升级 | syin的博客</title>
+  
+
+
+
+
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?69f744142ecee25c84cc1d1c16d9aa9e";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<meta name="generator" content="Hexo 8.1.2"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">syin的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br/>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br/>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br/>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-commonweal">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/404.html" rel="section"><i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br/>公益 404</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br/>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://blog.iuhui.site/gitlab%E5%8D%87%E7%BA%A7.html"/>
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="teatea"/>
+      <meta itemprop="description" content="生命不息，折腾不止！"/>
+      <meta itemprop="image" content="https://res.cloudinary.com/dc6pgic7p/image/upload/v1554968110/avatar.png"/>
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="syin的博客"/>
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">GitLab 升级：按官方 Upgrade Path 逐版本升级
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-04-08 14:35:00" itemprop="dateCreated datePublished" datetime="2019-04-08T14:35:00+00:00">2019-04-08</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2026-08-12 22:30:00" itemprop="dateModified" datetime="2026-08-12T22:30:00+00:00">2026-08-12</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/gitlab/" itemprop="url" rel="index"><span itemprop="name">gitlab</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="post-meta-item-icon"
+            >
+            <i class="fa fa-eye"></i>
+             阅读次数： 
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">4.5k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">4 分钟</span>
+              
+            </div>
+          
+
+          
+            <div class="post-description">使用 GitLab 官方 Upgrade Path 工具规划升级路径，并在每个必经版本完成备份、健康检查和后台迁移。</div>
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>GitLab 不能在任意版本之间直接跨级升级。跨越多个大版本时，必须先经过官方指定的必经版本（required upgrade stops），并在每一站等待后台迁移全部完成，再进入下一站。</p>
+<p>本文适用于使用官方 Linux Package（以前称 Omnibus）安装的单节点 GitLab CE&#x2F;EE。Docker、Helm、源码安装、多节点、Geo 和零停机升级的流程不同，应使用对应的官方文档。</p>
+<blockquote>
+<p>GitLab 会调整必经版本和条件。实际操作前必须重新使用官方工具计算，不能长期照搬某一条示例路径。</p>
+</blockquote>
+<h2 id="一、计算升级路径"><a href="#一、计算升级路径" class="headerlink" title="一、计算升级路径"></a>一、计算升级路径</h2><p>打开 GitLab Support 团队维护的 <a href="https://gitlab-com.gitlab.io/support/toolbox/upgrade-path/">Upgrade Path 工具</a>，输入当前版本和目标版本，保存工具生成的完整路径。</p>
+<p>先确认当前版本和版本类型：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> gitlab-rake gitlab:<span class="built_in">env</span>:info</span><br><span class="line"></span><br><span class="line"><span class="comment"># Debian/Ubuntu</span></span><br><span class="line">dpkg-query -W <span class="string">&#x27;gitlab-ce&#x27;</span> <span class="string">&#x27;gitlab-ee&#x27;</span> 2&gt;/dev/null</span><br><span class="line"></span><br><span class="line"><span class="comment"># RHEL/AlmaLinux/Rocky Linux</span></span><br><span class="line">rpm -qa | grep <span class="string">&#x27;^gitlab-\(ce\|ee\)&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>规划路径时遵守以下规则：</p>
+<ol>
+<li>以 Upgrade Path 工具的实时结果为准。</li>
+<li>每个 <code>主版本.次版本</code> 都安装该系列最新补丁。例如路径要求经过 <code>18.5</code>，应安装最新的 <code>18.5.z</code>，而不是 <code>18.5.0</code>。</li>
+<li>不要执行不带版本号的 <code>apt install gitlab-ee</code> 或 <code>dnf upgrade gitlab-ee</code>，否则可能跳过必经版本。</li>
+<li>每到一个必经版本，都要阅读该版本到下一版本之间的 <a href="https://docs.gitlab.com/update/versions/">Upgrade notes</a>。</li>
+<li>每一站的后台迁移未完成前，不得安装下一站。</li>
+</ol>
+<p>从 GitLab 17.5 开始，必经版本采用 <code>x.2.z</code>、<code>x.5.z</code>、<code>x.8.z</code> 和 <code>x.11.z</code> 的节奏。旧版本还有额外或条件性停留点，不能只套用这个规律。</p>
+<p>截至本文更新时，官方列出的常见必经版本如下：</p>
+<table>
+<thead>
+<tr>
+<th>大版本</th>
+<th>常规必经版本</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GitLab 15</td>
+<td><code>15.0.5</code>、<code>15.4.6</code>、<code>15.11.13</code></td>
+</tr>
+<tr>
+<td>GitLab 16</td>
+<td><code>16.3.9</code>、<code>16.7.10</code>、<code>16.11.10</code></td>
+</tr>
+<tr>
+<td>GitLab 17</td>
+<td><code>17.3.7</code>、<code>17.5.5</code>、<code>17.8.7</code>、<code>17.11.7</code></td>
+</tr>
+<tr>
+<td>GitLab 18</td>
+<td>最新的 <code>18.2.z</code>、<code>18.5.z</code>、<code>18.8.z</code>、<code>18.11.z</code></td>
+</tr>
+<tr>
+<td>GitLab 19</td>
+<td>最新的 <code>19.2.z</code>、<code>19.5.z</code>、<code>19.8.z</code>、<code>19.11.z</code></td>
+</tr>
+</tbody></table>
+<p>多 Web 节点、大型 CI 表、NPM Package Registry 或用户量较大的实例可能需要额外停留点。不要根据上表省略工具给出的条件性版本。目标版本尚未发布时，应停在当前可用且受支持的最新补丁版本。</p>
+<h2 id="二、升级前准备"><a href="#二、升级前准备" class="headerlink" title="二、升级前准备"></a>二、升级前准备</h2><h3 id="1-检查系统和组件"><a href="#1-检查系统和组件" class="headerlink" title="1. 检查系统和组件"></a>1. 检查系统和组件</h3><p>确认目标 GitLab 支持当前操作系统，并阅读路径中每个版本的升级说明。保证 PostgreSQL、Redis 和 Gitaly 正常运行，并预留足够磁盘空间。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> gitlab-ctl status</span><br><span class="line"><span class="built_in">df</span> -h</span><br><span class="line"><span class="built_in">df</span> -i</span><br></pre></td></tr></table></figure>
+
+<p>大型生产实例应先在生产环境副本中完整演练，记录每一站的安装和后台迁移耗时。</p>
+<h3 id="2-执行健康检查"><a href="#2-执行健康检查" class="headerlink" title="2. 执行健康检查"></a>2. 执行健康检查</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> gitlab-rake gitlab:check SANITIZE=<span class="literal">true</span></span><br><span class="line"><span class="built_in">sudo</span> gitlab-rake gitlab:doctor:secrets</span><br></pre></td></tr></table></figure>
+
+<p>解决异常后再继续。还应测试登录、项目列表、Issue&#x2F;Merge Request、Git clone&#x2F;push 和 CI Job。</p>
+<h3 id="3-确认后台迁移已完成"><a href="#3-确认后台迁移已完成" class="headerlink" title="3. 确认后台迁移已完成"></a>3. 确认后台迁移已完成</h3><p>在“管理员 -&gt; 监控 -&gt; 后台迁移”中确认没有 Queued、Finalizing 或 Failed 任务。</p>
+<p>较新版本可以使用 Rake task：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># GitLab 18.9 及以上</span></span><br><span class="line"><span class="built_in">sudo</span> gitlab-rake gitlab:background_migrations:list</span><br><span class="line"></span><br><span class="line"><span class="comment"># GitLab 18.8 及以下（如果当前版本提供）</span></span><br><span class="line"><span class="built_in">sudo</span> gitlab-rake gitlab:background_migrations:status</span><br></pre></td></tr></table></figure>
+
+<p>旧版本没有对应任务时，可以查询数据库：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> gitlab-psql -c <span class="string">&quot;SELECT job_class_name, table_name, column_name, job_arguments FROM batched_background_migrations WHERE status NOT IN (3, 6);&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>结果必须为零行。失败的迁移必须先修复和重试，不要直接在数据库中标记完成。</p>
+<p>如果启用了 Elasticsearch&#x2F;Advanced Search，还要检查搜索迁移：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> gitlab-rake gitlab:elastic:list_pending_migrations</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-创建可恢复的备份"><a href="#4-创建可恢复的备份" class="headerlink" title="4. 创建可恢复的备份"></a>4. 创建可恢复的备份</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 数据库、Git 仓库、上传文件等</span></span><br><span class="line"><span class="built_in">sudo</span> gitlab-backup create</span><br><span class="line"></span><br><span class="line"><span class="comment"># Linux Package 的配置和 secrets</span></span><br><span class="line"><span class="built_in">sudo</span> gitlab-ctl backup-etc</span><br></pre></td></tr></table></figure>
+
+<p>至少还要单独保存：</p>
+<ul>
+<li><code>/etc/gitlab/gitlab.rb</code></li>
+<li><code>/etc/gitlab/gitlab-secrets.json</code></li>
+<li><code>/var/opt/gitlab/backups/</code> 中刚生成的备份</li>
+</ul>
+<p>将备份复制到异机或对象存储，并验证恢复流程。GitLab 备份通常只能恢复到相同版本和相同版本类型（CE&#x2F;EE）的实例，不能把旧版本备份直接恢复到新版 GitLab。</p>
+<h3 id="5-安排维护窗口"><a href="#5-安排维护窗口" class="headerlink" title="5. 安排维护窗口"></a>5. 安排维护窗口</h3><p>暂停新的 CI&#x2F;CD Pipeline 和 Job；生产环境可以开启 Maintenance Mode。现代 Linux Package 升级会自行停止和启动所需服务，不必像旧教程那样手动只停止 Unicorn、Sidekiq 和 NGINX。新版本已使用 Puma，旧的 Unicorn 命令不再适用。</p>
+<h2 id="三、逐站安装指定版本"><a href="#三、逐站安装指定版本" class="headerlink" title="三、逐站安装指定版本"></a>三、逐站安装指定版本</h2><p>假设工具给出的路径为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">当前版本 -&gt; STOP_1 -&gt; STOP_2 -&gt; TARGET</span><br></pre></td></tr></table></figure>
+
+<p>下面的命令每次只能填写下一站。<code>&lt;version&gt;</code> 要替换为完整版本号，例如 <code>17.11.7</code>；CE&#x2F;EE 包名必须与当前实例一致。</p>
+<h3 id="Debian-Ubuntu"><a href="#Debian-Ubuntu" class="headerlink" title="Debian&#x2F;Ubuntu"></a>Debian&#x2F;Ubuntu</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># GitLab EE</span></span><br><span class="line"><span class="built_in">sudo</span> apt update</span><br><span class="line"><span class="built_in">sudo</span> apt install gitlab-ee=&lt;version&gt;-ee.0</span><br><span class="line"></span><br><span class="line"><span class="comment"># GitLab CE</span></span><br><span class="line"><span class="built_in">sudo</span> apt update</span><br><span class="line"><span class="built_in">sudo</span> apt install gitlab-ce=&lt;version&gt;-ce.0</span><br></pre></td></tr></table></figure>
+
+<p>查询实际可用版本：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">apt-cache madison gitlab-ee</span><br><span class="line"><span class="comment"># 或</span></span><br><span class="line">apt-cache madison gitlab-ce</span><br></pre></td></tr></table></figure>
+
+<h3 id="RHEL-AlmaLinux-Rocky-Linux-8-9"><a href="#RHEL-AlmaLinux-Rocky-Linux-8-9" class="headerlink" title="RHEL&#x2F;AlmaLinux&#x2F;Rocky Linux 8&#x2F;9"></a>RHEL&#x2F;AlmaLinux&#x2F;Rocky Linux 8&#x2F;9</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># EL9，GitLab EE</span></span><br><span class="line"><span class="built_in">sudo</span> dnf install gitlab-ee-&lt;version&gt;-ee.0.el9</span><br><span class="line"></span><br><span class="line"><span class="comment"># EL9，GitLab CE</span></span><br><span class="line"><span class="built_in">sudo</span> dnf install gitlab-ce-&lt;version&gt;-ce.0.el9</span><br><span class="line"></span><br><span class="line"><span class="comment"># EL8 时将 el9 改为 el8</span></span><br></pre></td></tr></table></figure>
+
+<p>查询可用版本：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dnf --showduplicates list gitlab-ee</span><br><span class="line"><span class="comment"># 或</span></span><br><span class="line">dnf --showduplicates list gitlab-ce</span><br></pre></td></tr></table></figure>
+
+<p>不要在一条命令中连续安装所有版本。每安装一站，都必须完成下一节的检查。</p>
+<h2 id="四、每个必经版本都要检查"><a href="#四、每个必经版本都要检查" class="headerlink" title="四、每个必经版本都要检查"></a>四、每个必经版本都要检查</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> gitlab-rake gitlab:<span class="built_in">env</span>:info</span><br><span class="line"><span class="built_in">sudo</span> gitlab-ctl status</span><br><span class="line"><span class="built_in">sudo</span> gitlab-rake gitlab:check SANITIZE=<span class="literal">true</span></span><br><span class="line"><span class="built_in">sudo</span> gitlab-rake gitlab:doctor:secrets</span><br></pre></td></tr></table></figure>
+
+<p>同时测试 Web 登录、Git clone&#x2F;push、Merge Request 和 CI&#x2F;CD。</p>
+<p>GitLab 的后台迁移由 Sidekiq 执行。安装完成不表示迁移已经结束，大型实例可能需要数小时甚至更久。只有所有迁移均为 Finished&#x2F;Finalized，且没有 Failed 任务，才能进入下一站。</p>
+<p>完整循环如下：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">安装下一必经版本</span><br><span class="line">  -&gt; 检查服务与业务功能</span><br><span class="line">  -&gt; 等待所有后台迁移完成</span><br><span class="line">  -&gt; 阅读下一站 Upgrade notes</span><br><span class="line">  -&gt; 备份或创建快照</span><br><span class="line">  -&gt; 安装下一必经版本</span><br></pre></td></tr></table></figure>
+
+<h2 id="五、到达目标版本后的检查"><a href="#五、到达目标版本后的检查" class="headerlink" title="五、到达目标版本后的检查"></a>五、到达目标版本后的检查</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> gitlab-rake gitlab:<span class="built_in">env</span>:info</span><br><span class="line"><span class="built_in">sudo</span> gitlab-ctl status</span><br><span class="line"><span class="built_in">sudo</span> gitlab-rake gitlab:check SANITIZE=<span class="literal">true</span></span><br><span class="line"><span class="built_in">sudo</span> gitlab-rake gitlab:doctor:secrets</span><br><span class="line"><span class="built_in">sudo</span> gitlab-backup create</span><br></pre></td></tr></table></figure>
+
+<p>最后确认：</p>
+<ol>
+<li>后台迁移全部完成。</li>
+<li>恢复 CI&#x2F;CD Pipeline 和 Job。</li>
+<li>关闭 Maintenance Mode。</li>
+<li>将 GitLab Runner 升级到兼容版本。</li>
+<li>检查错误日志、Sidekiq 队列、磁盘、邮件、LDAP&#x2F;SSO、Container Registry、Pages 和对象存储。</li>
+<li>记录每一站版本、起止时间、迁移耗时和异常处理过程。</li>
+</ol>
+<h2 id="六、失败与回滚"><a href="#六、失败与回滚" class="headerlink" title="六、失败与回滚"></a>六、失败与回滚</h2><p>升级失败时不要继续安装下一版本，也不要仅靠降级软件包回滚。数据库 schema 可能已经改变，直接安装旧 RPM&#x2F;DEB 可能进一步损坏实例。</p>
+<p>正确做法是停止操作、保存日志，并按官方回滚文档将软件、数据库、仓库、配置和 secrets 一起恢复到升级前的同一版本。生产环境在没有经过恢复演练前，不应开始跨大版本升级。</p>
+<h2 id="官方资料"><a href="#官方资料" class="headerlink" title="官方资料"></a>官方资料</h2><ul>
+<li><a href="https://gitlab-com.gitlab.io/support/toolbox/upgrade-path/">Upgrade Path 工具</a></li>
+<li><a href="https://docs.gitlab.com/update/upgrade_paths/">Plan your upgrade path</a></li>
+<li><a href="https://docs.gitlab.com/update/plan_your_upgrade/">Before you upgrade</a></li>
+<li><a href="https://docs.gitlab.com/update/package/">Upgrade Linux package instances</a></li>
+<li><a href="https://docs.gitlab.com/update/background_migrations/">Check migrations before upgrade</a></li>
+<li><a href="https://docs.gitlab.com/update/versions/">GitLab upgrade notes</a></li>
+<li><a href="https://docs.gitlab.com/administration/backup_restore/backup_gitlab/">Back up GitLab</a></li>
+</ul>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+      <div>
+        <div id="reward-container">
+  <div></div>
+  <button id="reward-button" disable="enable" onclick="var qr = document.getElementById(&quot;qr&quot;); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+
+    
+      
+      
+        
+      
+      <div style="display: inline-block">
+        <img src="https://res.cloudinary.com/dc6pgic7p/image/upload/v1553325075/weixin.jpg" alt="teatea 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+      
+      
+        
+      
+      <div style="display: inline-block">
+        <img src="/images/zhifubao.jpg" alt="teatea 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+      <div>
+        
+
+
+
+
+  
+
+
+
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>teatea</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    
+    <a href="https://blog.iuhui.site/gitlab%E5%8D%87%E7%BA%A7.html" title="GitLab 升级：按官方 Upgrade Path 逐版本升级">https://blog.iuhui.site/gitlab%E5%8D%87%E7%BA%A7.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/zh-CN" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/GitLab/" rel="tag"># GitLab</a>
+          
+            <a href="/tags/%E8%BF%90%E7%BB%B4/" rel="tag"># 运维</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/ELK-%E4%BD%BF%E7%94%A8%E7%B3%BB%E5%88%97-%E4%BA%8C%E3%80%81logstash%E5%92%8Cfilebeat%E5%AE%89%E8%A3%85.html" rel="next" title="ELK 使用系列 二、logstash和filebeat安装">
+                <i class="fa fa-chevron-left"></i> ELK 使用系列 二、logstash和filebeat安装
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/ELK-%E4%BD%BF%E7%94%A8%E7%B3%BB%E5%88%97-%E4%B8%89%E3%80%81kibana%E5%88%9B%E5%BB%BAvisualize.html" rel="prev" title="ELK 使用系列 三、kibana创建visualize">
+                ELK 使用系列 三、kibana创建visualize <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="gitalk-container">
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://res.cloudinary.com/dc6pgic7p/image/upload/v1554968110/avatar.png"
+                alt="teatea"/>
+            
+              <p class="site-author-name" itemprop="name">teatea</p>
+              <div class="site-description motion-element" itemprop="description">生命不息，折腾不止！</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/%20%7C%7C%20archive">
+                
+                    <span class="site-state-item-count">26</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/%20%7C%7C%20th">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/yubinhong" title="GitHub &rarr; https:&#x2F;&#x2F;github.com&#x2F;yubinhong" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:yubinhong1990@gmail.com" title="E-Mail &rarr; mailto:yubinhong1990@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
+          
+
+          
+             <div class="cc-license motion-element" itemprop="license">
+              
+              
+                
+              
+              
+              
+              <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/zh-CN" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"/></a>
+             </div>
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E8%AE%A1%E7%AE%97%E5%8D%87%E7%BA%A7%E8%B7%AF%E5%BE%84"><span class="nav-number">1.</span> <span class="nav-text">一、计算升级路径</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E5%8D%87%E7%BA%A7%E5%89%8D%E5%87%86%E5%A4%87"><span class="nav-number">2.</span> <span class="nav-text">二、升级前准备</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E6%A3%80%E6%9F%A5%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%BB%84%E4%BB%B6"><span class="nav-number">2.1.</span> <span class="nav-text">1. 检查系统和组件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E6%89%A7%E8%A1%8C%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5"><span class="nav-number">2.2.</span> <span class="nav-text">2. 执行健康检查</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E7%A1%AE%E8%AE%A4%E5%90%8E%E5%8F%B0%E8%BF%81%E7%A7%BB%E5%B7%B2%E5%AE%8C%E6%88%90"><span class="nav-number">2.3.</span> <span class="nav-text">3. 确认后台迁移已完成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E5%88%9B%E5%BB%BA%E5%8F%AF%E6%81%A2%E5%A4%8D%E7%9A%84%E5%A4%87%E4%BB%BD"><span class="nav-number">2.4.</span> <span class="nav-text">4. 创建可恢复的备份</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-%E5%AE%89%E6%8E%92%E7%BB%B4%E6%8A%A4%E7%AA%97%E5%8F%A3"><span class="nav-number">2.5.</span> <span class="nav-text">5. 安排维护窗口</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E9%80%90%E7%AB%99%E5%AE%89%E8%A3%85%E6%8C%87%E5%AE%9A%E7%89%88%E6%9C%AC"><span class="nav-number">3.</span> <span class="nav-text">三、逐站安装指定版本</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Debian-Ubuntu"><span class="nav-number">3.1.</span> <span class="nav-text">Debian&#x2F;Ubuntu</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RHEL-AlmaLinux-Rocky-Linux-8-9"><span class="nav-number">3.2.</span> <span class="nav-text">RHEL&#x2F;AlmaLinux&#x2F;Rocky Linux 8&#x2F;9</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E6%AF%8F%E4%B8%AA%E5%BF%85%E7%BB%8F%E7%89%88%E6%9C%AC%E9%83%BD%E8%A6%81%E6%A3%80%E6%9F%A5"><span class="nav-number">4.</span> <span class="nav-text">四、每个必经版本都要检查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E5%88%B0%E8%BE%BE%E7%9B%AE%E6%A0%87%E7%89%88%E6%9C%AC%E5%90%8E%E7%9A%84%E6%A3%80%E6%9F%A5"><span class="nav-number">5.</span> <span class="nav-text">五、到达目标版本后的检查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E5%A4%B1%E8%B4%A5%E4%B8%8E%E5%9B%9E%E6%BB%9A"><span class="nav-number">6.</span> <span class="nav-text">六、失败与回滚</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%98%E6%96%B9%E8%B5%84%E6%96%99"><span class="nav-number">7.</span> <span class="nav-text">官方资料</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2026</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">teatea</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">92k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">1:24</span>
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v8.1.2</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.0.1</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+  
+
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+    
+
+<script src="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css"/>
+
+
+
+<script src="//cdn.jsdelivr.net/npm/js-md5@0.7.3/src/md5.min.js"></script>
+
+<script>
+  var gitalk = new Gitalk({
+    clientID: '2b85de6b1415eaa62bfe',
+    clientSecret: '368d0b08b22c66814738061432ee042d1e66af02',
+    repo: 'blog.teatea.ga',
+    owner: 'yubinhong',
+    admin: ['yubinhong'],
+    id: md5(location.pathname),
+    
+      language: 'zh-CN',
+    
+    distractionFreeMode: 'true'
+  });
+  gitalk.render('gitalk-container');
+</script>
+
+  
+
+
+  
+  <script>
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url).replace(/\/{2,}/g, '/');
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x"></i></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x"></i></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+        if (result) $(this).text('复制成功');
+        else $(this).text('复制失败');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+  
+
+  
+
+</body>
+</html>

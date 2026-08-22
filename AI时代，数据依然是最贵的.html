@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222"/>
+<meta name="google-site-verification" content="-LvJ2MYKS-LMmbiiWaR7rL6AY0kwJa6QzPsoDVP2WDg" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2"/>
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1"/>
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Pisces',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+<script data-ad-client="ca-pub-3477951175425866" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+
+  
+
+
+
+
+  <meta name="description" content="AI 加快了代码与 SQL 的生产速度，也放大了数据库误操作的风险。本文介绍如何通过 Archery 建立 SQL 审核、权限和审计流程，以及我的 ARM64 多架构适配实践。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI 时代，数据依然是最贵的">
+<meta property="og:url" content="https://blog.iuhui.site/AI%E6%97%B6%E4%BB%A3%EF%BC%8C%E6%95%B0%E6%8D%AE%E4%BE%9D%E7%84%B6%E6%98%AF%E6%9C%80%E8%B4%B5%E7%9A%84.html">
+<meta property="og:site_name" content="syin的博客">
+<meta property="og:description" content="AI 加快了代码与 SQL 的生产速度，也放大了数据库误操作的风险。本文介绍如何通过 Archery 建立 SQL 审核、权限和审计流程，以及我的 ARM64 多架构适配实践。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-16T10:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-16T10:00:00.000Z">
+<meta property="article:author" content="teatea">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="ARM64">
+<meta property="article:tag" content="Archery">
+<meta property="article:tag" content="数据库">
+<meta name="twitter:card" content="summary">
+
+
+
+
+
+
+  <link rel="canonical" href="https://blog.iuhui.site/AI时代，数据依然是最贵的.html"/>
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>AI 时代，数据依然是最贵的 | syin的博客</title>
+  
+
+
+
+
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?69f744142ecee25c84cc1d1c16d9aa9e";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<meta name="generator" content="Hexo 8.1.2"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">syin的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br/>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br/>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br/>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-commonweal">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/404.html" rel="section"><i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br/>公益 404</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br/>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://blog.iuhui.site/AI%E6%97%B6%E4%BB%A3%EF%BC%8C%E6%95%B0%E6%8D%AE%E4%BE%9D%E7%84%B6%E6%98%AF%E6%9C%80%E8%B4%B5%E7%9A%84.html"/>
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="teatea"/>
+      <meta itemprop="description" content="生命不息，折腾不止！"/>
+      <meta itemprop="image" content="https://res.cloudinary.com/dc6pgic7p/image/upload/v1554968110/avatar.png"/>
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="syin的博客"/>
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">AI 时代，数据依然是最贵的
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2026-08-16 10:00:00" itemprop="dateCreated datePublished" datetime="2026-08-16T10:00:00+00:00">2026-08-16</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/devops/" itemprop="url" rel="index"><span itemprop="name">devops</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="post-meta-item-icon"
+            >
+            <i class="fa fa-eye"></i>
+             阅读次数： 
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">4.1k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">4 分钟</span>
+              
+            </div>
+          
+
+          
+            <div class="post-description">AI 加快了代码与 SQL 的生产速度，也放大了数据库误操作的风险。本文介绍如何通过 Archery 建立 SQL 审核、权限和审计流程，以及我的 ARM64 多架构适配实践。</div>
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>AI 可以写代码、生成图片、分析文档，甚至在几分钟内搭建一个应用。但当越来越多的业务开始接入 AI，一个容易被忽略的事实反而更加重要：</p>
+<blockquote>
+<p>模型可以更换，代码可以重写，服务器可以重建，但生产数据库中的数据往往无法重新创造。</p>
+</blockquote>
+<p>一条缺少 <code>WHERE</code> 条件的 <code>DELETE</code>，一次未经评估的表结构变更，或者一个误操作的 <code>DROP TABLE</code>，都可能让团队几个月甚至几年的积累瞬间归零。</p>
+<p>所以在 AI 时代，企业最昂贵的资产依然不是模型，也不是服务器，而是数据。</p>
+<span id="more"></span>
+
+<h2 id="数据库真正危险的，往往不是黑客"><a href="#数据库真正危险的，往往不是黑客" class="headerlink" title="数据库真正危险的，往往不是黑客"></a>数据库真正危险的，往往不是黑客</h2><p>提到数据库安全，很多人首先想到攻击、漏洞和数据泄露。但在日常运维中，风险也经常来自内部操作：</p>
+<ul>
+<li>开发人员执行了一条影响范围错误的 SQL；</li>
+<li>测试环境的操作被误提交到生产环境；</li>
+<li>大表直接执行 DDL，造成长时间阻塞；</li>
+<li>查询没有合适索引，拖慢整个数据库；</li>
+<li>数据库账号多人共享，无法追踪操作人；</li>
+<li>敏感字段被随意查询、导出和传播；</li>
+<li>SQL 上线依赖聊天记录与口头确认。</li>
+</ul>
+<p>小团队常见的发布流程是：开发把 SQL 发到群里，DBA 或运维看一眼，然后登录服务器执行。业务规模较小时，这种方式似乎足够直接；随着数据库数量、参与人员和发布频率增加，它却很难回答下面这些问题：</p>
+<blockquote>
+<p>谁可以操作哪个数据库？提交了什么 SQL？谁审核并批准？最终执行结果是什么？出现问题后能否追踪和回滚？</p>
+</blockquote>
+<p>真正需要治理的，不只是数据库密码，而是每一次访问和变更的完整生命周期。</p>
+<h2 id="Archery-是什么"><a href="#Archery-是什么" class="headerlink" title="Archery 是什么"></a>Archery 是什么</h2><p><a href="https://github.com/hhyo/Archery">Archery</a> 是一个开源的 SQL 审核与查询平台。它把查询、SQL 审核、上线审批、权限管理和操作审计集中到一个 Web 入口，而不只是提供另一个数据库客户端。</p>
+<p>它的核心价值可以概括为三点：</p>
+<ol>
+<li>把 SQL 上线从“人工看一眼”变成标准化流程；</li>
+<li>让开发人员能够查数据，但不必持有生产库高权限账号；</li>
+<li>把分散的数据库连接、权限和操作记录集中起来。</li>
+</ol>
+<p>Archery 支持 MySQL、MariaDB、Microsoft SQL Server、Redis、PostgreSQL、Oracle、MongoDB、ClickHouse、Doris、Elasticsearch、OpenSearch、TDengine 等多种数据源。不过，不同数据库支持的能力并不相同，部署前应以项目 README 中的<a href="https://github.com/hhyo/Archery#%E5%8A%9F%E8%83%BD%E6%B8%85%E5%8D%95">功能矩阵</a>为准。</p>
+<h2 id="SQL-上线不能只靠“看一眼”"><a href="#SQL-上线不能只靠“看一眼”" class="headerlink" title="SQL 上线不能只靠“看一眼”"></a>SQL 上线不能只靠“看一眼”</h2><p>传统 SQL 审核高度依赖审核人的经验和当时的状态：SQL 太长容易漏看，发布频率高时难以逐条检查，不同人的判断标准也不一致，深夜紧急发布则更容易误判。</p>
+<p>Archery 可以把数据库变更组织为一条可追踪的链路：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">提交 SQL</span><br><span class="line">  -&gt; 自动审核</span><br><span class="line">  -&gt; 人工审批</span><br><span class="line">  -&gt; 执行上线</span><br><span class="line">  -&gt; 保存结果与操作记录</span><br></pre></td></tr></table></figure>
+
+<p>开发人员选择目标实例、数据库和上线时间后提交工单，不再需要直接登录生产数据库。审核规则可以提前发现缺少必要条件的 <code>UPDATE</code> 或 <code>DELETE</code>、不符合规范的表结构、高风险 DDL，以及可能影响大量数据的变更。</p>
+<p>在 MySQL 场景中，Archery 可以配合 goInception 完成审核、执行、备份及生成回滚语句，并集成 SOAR、SQLAdvisor、SchemaSync、gh-ost、pt-online-schema-change 等工具。具体能力取决于所用数据库、组件安装情况和项目版本，不能把平台审核当成绝对安全保证。</p>
+<p>审核平台的意义不是替人承担责任，而是在执行之前增加规则检查，在执行过程中留下记录，在出现问题后提供追踪线索。</p>
+<h2 id="查数据不等于交出数据库密码"><a href="#查数据不等于交出数据库密码" class="headerlink" title="查数据不等于交出数据库密码"></a>查数据不等于交出数据库密码</h2><p>开发人员需要查询生产数据排查问题，但直接开放数据库账号会带来误操作、越权访问和敏感数据泄露。如果完全不给权限，处理问题的效率又会很低。</p>
+<p>Archery 提供了一种折中方式：开发人员通过浏览器进入平台，在授权范围内执行查询，而不是获得完整的数据库账号。平台可以集中管理：</p>
+<ul>
+<li>用户、角色和资源组；</li>
+<li>数据库实例与查询权限；</li>
+<li>SQL 上线权限和审批流程；</li>
+<li>查询记录与操作审计；</li>
+<li>敏感字段的数据脱敏。</li>
+</ul>
+<p>数据库权限由此从“把密码发给谁”，变成更细粒度的“谁可以在什么范围内，以什么方式访问哪些数据”。</p>
+<p>但平台本身也会成为重要入口。部署后仍应启用最小权限、强认证和访问控制，并妥善保护 Archery 使用的数据库凭据。</p>
+<h2 id="数据库需要统一的资产视图"><a href="#数据库需要统一的资产视图" class="headerlink" title="数据库需要统一的资产视图"></a>数据库需要统一的资产视图</h2><p>只有一两个数据库时，普通客户端通常够用。实例逐渐增多后，信息会迅速分散：表和字段分别属于什么业务、谁修改过结构、哪些 SQL 最慢、哪些账号长期未使用、当前是否存在长时间会话，都很难从单一连接信息中回答。</p>
+<p>除了查询和审核，Archery 还提供数据字典、慢日志、会话管理、账号管理、参数管理和数据归档等能力。它不必替代所有专业数据库工具，但可以成为开发、运维和 DBA 之间的统一入口：</p>
+<ul>
+<li>开发人员有固定的位置查询数据、提交 SQL；</li>
+<li>运维和 DBA 可以集中管理权限、审批和执行记录；</li>
+<li>团队能够看到数据库操作的来龙去脉，而不是依赖个人记忆。</li>
+</ul>
+<h2 id="为什么适配-Oracle-Cloud-ARM"><a href="#为什么适配-Oracle-Cloud-ARM" class="headerlink" title="为什么适配 Oracle Cloud ARM"></a>为什么适配 Oracle Cloud ARM</h2><p>我有一些自建服务运行在 Oracle Cloud ARM 实例上。当我准备部署 Archery 时，首先遇到的不是业务配置，而是容器及其依赖的架构兼容问题。</p>
+<p>在 x86_64 主机上能够直接运行的镜像，到了 ARM64 环境可能会遇到：</p>
+<ul>
+<li>镜像没有 ARM64 Manifest；</li>
+<li>基础镜像或下载地址写死为 amd64；</li>
+<li>依赖工具只有 x86_64 预编译二进制；</li>
+<li>Dockerfile 中的安装路径与 CPU 架构绑定；</li>
+<li>主应用能够启动，但某些审核或优化工具不可用。</li>
+</ul>
+<p>因此，我 Fork 了 Archery，并修改构建与部署部分，目标是在保留 amd64 构建的同时，增加 ARM64 主平台支持：</p>
+<ul>
+<li><a href="https://github.com/yubinhong/Archery">我的 Archery Fork</a></li>
+<li><a href="https://github.com/hhyo/Archery">Archery 原项目</a></li>
+</ul>
+<h2 id="ARM64-适配做了什么"><a href="#ARM64-适配做了什么" class="headerlink" title="ARM64 适配做了什么"></a>ARM64 适配做了什么</h2><p>这次工作的重点不是增加业务功能，而是建立可重复的多架构镜像构建流程。</p>
+<h3 id="1-使用-Buildx-构建多架构镜像"><a href="#1-使用-Buildx-构建多架构镜像" class="headerlink" title="1. 使用 Buildx 构建多架构镜像"></a>1. 使用 Buildx 构建多架构镜像</h3><p>GitHub Actions 工作流加入 QEMU 和 Docker Buildx，基础镜像与应用镜像都面向下面两个平台构建：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">linux/amd64</span><br><span class="line">linux/arm64</span><br></pre></td></tr></table></figure>
+
+<p>构建过程先发布对应架构的基础镜像，再让 Archery 应用镜像引用它，避免在 ARM 主机上拉到只包含 amd64 层的镜像。</p>
+<h3 id="2-按目标架构处理依赖"><a href="#2-按目标架构处理依赖" class="headerlink" title="2. 按目标架构处理依赖"></a>2. 按目标架构处理依赖</h3><p>原构建流程中存在写死的 amd64 下载地址、库目录和二进制文件。适配后，Dockerfile 通过 <code>TARGETARCH</code> 区分 <code>amd64</code> 与 <code>arm64</code>，为 Oracle Instant Client、系统库路径等选择对应架构，并在构建阶段为目标平台编译 my2sql。</p>
+<p>这比在 ARM 主机上通过模拟强行运行完整 amd64 镜像更可控，也让同一套构建文件能够继续服务 x86_64 环境。</p>
+<h3 id="3-明确-ARM64-的能力边界"><a href="#3-明确-ARM64-的能力边界" class="headerlink" title="3. 明确 ARM64 的能力边界"></a>3. 明确 ARM64 的能力边界</h3><p>多架构镜像不代表所有第三方工具都已原生支持 ARM64。当前 Fork 中，SQLAdvisor、SOAR 和 Archery 使用的旧版 Mongo Shell 因上游仅发布 amd64 二进制，在 ARM64 镜像中会被标记为不可用。</p>
+<p>这点必须说清楚：ARM64 适配解决的是 Archery 主应用及一组关键依赖的构建与运行问题，而不是承诺功能矩阵中的每项能力在两个架构上完全一致。部署前应根据自己的数据库类型和所需工具做实际验证。</p>
+<h2 id="小团队更需要可执行的规则"><a href="#小团队更需要可执行的规则" class="headerlink" title="小团队更需要可执行的规则"></a>小团队更需要可执行的规则</h2><p>SQL 审核平台并不是大公司的专属。大公司通常有 DBA、发布平台、备份制度和明确的职责分工；小团队却经常由同一个人同时负责开发、运维和数据库，权限更集中，误操作后也缺少第二道防线。</p>
+<p>一套工具不必做得很重，但至少应该落实这些底线：</p>
+<ol>
+<li>开发人员不直接持有生产库高权限账号；</li>
+<li>高风险 SQL 在执行前经过自动检查和人工复核；</li>
+<li>重要变更留下审批与执行记录；</li>
+<li>查询和变更操作能够追踪到人；</li>
+<li>关键数据库定期备份，并真正演练过恢复；</li>
+<li>高风险 DDL 预先评估锁、容量和执行时间；</li>
+<li>生产变更准备可验证的回退方案。</li>
+</ol>
+<p>Archery 可以帮助团队建立前四项流程，但它不能替代备份、恢复演练、监控告警和灾难恢复。审核通过也不等于 SQL 一定不会产生业务风险。</p>
+<h2 id="AI-越强，数据库治理越重要"><a href="#AI-越强，数据库治理越重要" class="headerlink" title="AI 越强，数据库治理越重要"></a>AI 越强，数据库治理越重要</h2><p>AI 正在降低代码和 SQL 的生产成本。过去需要几天完成的功能，现在可能几个小时就能生成；接下来，表结构、迁移脚本、发布工单甚至部署动作也会越来越自动化。</p>
+<p>速度提高后，关键问题不再只是“AI 能不能生成 SQL”，而是：</p>
+<blockquote>
+<p>谁来约束它生成的 SQL，又由谁确认这条语句适合真实的生产环境？</p>
+</blockquote>
+<p>模型可以生成语法正确的 SQL，却未必了解生产数据规模、流量峰值、表之间的隐性依赖，也无法独自承担误删数据的责任。更合理的自动化链路应该是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">AI 生成 SQL</span><br><span class="line">  -&gt; 规则审核</span><br><span class="line">  -&gt; 影响范围与执行计划评估</span><br><span class="line">  -&gt; 人工或策略审批</span><br><span class="line">  -&gt; 受控执行</span><br><span class="line">  -&gt; 全程审计</span><br></pre></td></tr></table></figure>
+
+<p>AI 不是数据库治理的替代者。恰恰相反，代码和变更生成得越快，进入生产环境之前的安全门槛越应该明确。</p>
+<h2 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h2><p>在 AI 时代，我们很容易被模型参数、GPU 数量和推理速度吸引。但对一个真正运行中的业务来说，最重要的资产往往安静地躺在数据库里：客户、订单、交易、库存、财务记录，以及多年积累下来的每一个业务状态。</p>
+<p>模型可以更换，代码可以重构，服务器可以迁移。数据一旦丢失，很多时候无法重来。</p>
+<p>所以我仍然相信：</p>
+<blockquote>
+<p><strong>AI 时代，数据依然是最贵的。</strong></p>
+</blockquote>
+<p>保护数据的第一步，就是不要让每一次数据库操作都成为一次赌博。</p>
+<h2 id="相关项目"><a href="#相关项目" class="headerlink" title="相关项目"></a>相关项目</h2><ul>
+<li><a href="https://github.com/yubinhong/Archery">我的 Archery ARM64 多架构适配 Fork</a></li>
+<li><a href="https://github.com/hhyo/Archery">Archery 原项目</a></li>
+<li><a href="https://archerydms.com/">Archery 官方文档</a></li>
+</ul>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+      <div>
+        <div id="reward-container">
+  <div></div>
+  <button id="reward-button" disable="enable" onclick="var qr = document.getElementById(&quot;qr&quot;); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+
+    
+      
+      
+        
+      
+      <div style="display: inline-block">
+        <img src="https://res.cloudinary.com/dc6pgic7p/image/upload/v1553325075/weixin.jpg" alt="teatea 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+      
+      
+        
+      
+      <div style="display: inline-block">
+        <img src="/images/zhifubao.jpg" alt="teatea 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+      <div>
+        
+
+
+
+
+  
+
+
+
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>teatea</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    
+    <a href="https://blog.iuhui.site/AI%E6%97%B6%E4%BB%A3%EF%BC%8C%E6%95%B0%E6%8D%AE%E4%BE%9D%E7%84%B6%E6%98%AF%E6%9C%80%E8%B4%B5%E7%9A%84.html" title="AI 时代，数据依然是最贵的">https://blog.iuhui.site/AI%E6%97%B6%E4%BB%A3%EF%BC%8C%E6%95%B0%E6%8D%AE%E4%BE%9D%E7%84%B6%E6%98%AF%E6%9C%80%E8%B4%B5%E7%9A%84.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/zh-CN" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/AI/" rel="tag"># AI</a>
+          
+            <a href="/tags/Archery/" rel="tag"># Archery</a>
+          
+            <a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/" rel="tag"># 数据库</a>
+          
+            <a href="/tags/ARM64/" rel="tag"># ARM64</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/%E7%94%A8%E6%89%8B%E6%9C%BA%E6%93%8D%E6%8E%A7Codex.html" rel="next" title="用 iPhone 远程操控 Linux 上的 Codex CLI">
+                <i class="fa fa-chevron-left"></i> 用 iPhone 远程操控 Linux 上的 Codex CLI
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/SEO%E6%98%AF%E4%BB%80%E4%B9%88%E7%94%A8%E5%9B%BE%E7%89%87%E5%8E%8B%E7%BC%A9%E7%BD%91%E7%AB%99%E7%90%86%E8%A7%A3%E5%85%B3%E9%94%AE%E8%AF%8D%E5%92%8C%E6%90%9C%E7%B4%A2%E6%84%8F%E5%9B%BE.html" rel="prev" title="SEO 是什么？用图片压缩网站理解关键词和搜索意图">
+                SEO 是什么？用图片压缩网站理解关键词和搜索意图 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="gitalk-container">
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://res.cloudinary.com/dc6pgic7p/image/upload/v1554968110/avatar.png"
+                alt="teatea"/>
+            
+              <p class="site-author-name" itemprop="name">teatea</p>
+              <div class="site-description motion-element" itemprop="description">生命不息，折腾不止！</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/%20%7C%7C%20archive">
+                
+                    <span class="site-state-item-count">26</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/%20%7C%7C%20th">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/yubinhong" title="GitHub &rarr; https:&#x2F;&#x2F;github.com&#x2F;yubinhong" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:yubinhong1990@gmail.com" title="E-Mail &rarr; mailto:yubinhong1990@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
+          
+
+          
+             <div class="cc-license motion-element" itemprop="license">
+              
+              
+                
+              
+              
+              
+              <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/zh-CN" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"/></a>
+             </div>
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9C%9F%E6%AD%A3%E5%8D%B1%E9%99%A9%E7%9A%84%EF%BC%8C%E5%BE%80%E5%BE%80%E4%B8%8D%E6%98%AF%E9%BB%91%E5%AE%A2"><span class="nav-number">1.</span> <span class="nav-text">数据库真正危险的，往往不是黑客</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Archery-%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">2.</span> <span class="nav-text">Archery 是什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SQL-%E4%B8%8A%E7%BA%BF%E4%B8%8D%E8%83%BD%E5%8F%AA%E9%9D%A0%E2%80%9C%E7%9C%8B%E4%B8%80%E7%9C%BC%E2%80%9D"><span class="nav-number">3.</span> <span class="nav-text">SQL 上线不能只靠“看一眼”</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E6%95%B0%E6%8D%AE%E4%B8%8D%E7%AD%89%E4%BA%8E%E4%BA%A4%E5%87%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AF%86%E7%A0%81"><span class="nav-number">4.</span> <span class="nav-text">查数据不等于交出数据库密码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E9%9C%80%E8%A6%81%E7%BB%9F%E4%B8%80%E7%9A%84%E8%B5%84%E4%BA%A7%E8%A7%86%E5%9B%BE"><span class="nav-number">5.</span> <span class="nav-text">数据库需要统一的资产视图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%80%82%E9%85%8D-Oracle-Cloud-ARM"><span class="nav-number">6.</span> <span class="nav-text">为什么适配 Oracle Cloud ARM</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ARM64-%E9%80%82%E9%85%8D%E5%81%9A%E4%BA%86%E4%BB%80%E4%B9%88"><span class="nav-number">7.</span> <span class="nav-text">ARM64 适配做了什么</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E4%BD%BF%E7%94%A8-Buildx-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%9E%B6%E6%9E%84%E9%95%9C%E5%83%8F"><span class="nav-number">7.1.</span> <span class="nav-text">1. 使用 Buildx 构建多架构镜像</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E6%8C%89%E7%9B%AE%E6%A0%87%E6%9E%B6%E6%9E%84%E5%A4%84%E7%90%86%E4%BE%9D%E8%B5%96"><span class="nav-number">7.2.</span> <span class="nav-text">2. 按目标架构处理依赖</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E6%98%8E%E7%A1%AE-ARM64-%E7%9A%84%E8%83%BD%E5%8A%9B%E8%BE%B9%E7%95%8C"><span class="nav-number">7.3.</span> <span class="nav-text">3. 明确 ARM64 的能力边界</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%8F%E5%9B%A2%E9%98%9F%E6%9B%B4%E9%9C%80%E8%A6%81%E5%8F%AF%E6%89%A7%E8%A1%8C%E7%9A%84%E8%A7%84%E5%88%99"><span class="nav-number">8.</span> <span class="nav-text">小团队更需要可执行的规则</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AI-%E8%B6%8A%E5%BC%BA%EF%BC%8C%E6%95%B0%E6%8D%AE%E5%BA%93%E6%B2%BB%E7%90%86%E8%B6%8A%E9%87%8D%E8%A6%81"><span class="nav-number">9.</span> <span class="nav-text">AI 越强，数据库治理越重要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%99%E5%9C%A8%E6%9C%80%E5%90%8E"><span class="nav-number">10.</span> <span class="nav-text">写在最后</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E9%A1%B9%E7%9B%AE"><span class="nav-number">11.</span> <span class="nav-text">相关项目</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2026</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">teatea</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">92k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">1:24</span>
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v8.1.2</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.0.1</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+  
+
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.1"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.1"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+    
+
+<script src="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css"/>
+
+
+
+<script src="//cdn.jsdelivr.net/npm/js-md5@0.7.3/src/md5.min.js"></script>
+
+<script>
+  var gitalk = new Gitalk({
+    clientID: '2b85de6b1415eaa62bfe',
+    clientSecret: '368d0b08b22c66814738061432ee042d1e66af02',
+    repo: 'blog.teatea.ga',
+    owner: 'yubinhong',
+    admin: ['yubinhong'],
+    id: md5(location.pathname),
+    
+      language: 'zh-CN',
+    
+    distractionFreeMode: 'true'
+  });
+  gitalk.render('gitalk-container');
+</script>
+
+  
+
+
+  
+  <script>
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url).replace(/\/{2,}/g, '/');
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x"></i></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x"></i></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<script>
+  $('.highlight').each(function(i, e) {
+    var $wrap = $('<div>').addClass('highlight-wrap');
+    $(e).after($wrap);
+    $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function(e) {
+      var code = $(this).parent().find('.code').find('.line').map(function(i, e) {
+        return $(e).text();
+      }).toArray().join('\n');
+      var ta = document.createElement('textarea');
+      var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+      ta.style.top = yPosition + 'px'; // Prevent page scroll
+      ta.style.position = 'absolute';
+      ta.style.opacity = '0';
+      ta.readOnly = true;
+      ta.value = code;
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, code.length);
+      ta.readOnly = false;
+      var result = document.execCommand('copy');
+      
+        if (result) $(this).text('复制成功');
+        else $(this).text('复制失败');
+      
+      ta.blur(); // For iOS
+      $(this).blur();
+    })).on('mouseleave', function(e) {
+      var $b = $(this).find('.copy-btn');
+      setTimeout(function() {
+        $b.text('复制');
+      }, 300);
+    }).append(e);
+  })
+</script>
+
+
+  
+
+  
+
+</body>
+</html>
